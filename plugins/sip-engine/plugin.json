@@ -1,0 +1,139 @@
+{
+  "name": "sip-engine",
+  "displayName": "SIP Engine Plugin",
+  "version": "2.3.0",
+  "description": "SIP telephony integration supporting ElevenLabs SIP (multi-provider) and OpenAI SIP (incoming calls). Enables customers to use their own SIP trunks for AI-powered voice calls.",
+  "author": "AgentLabs",
+  "license": "Commercial",
+  "homepage": "https://agentlabs.io/plugins/sip-engine",
+  "compatibility": {
+    "agentlabs": ">=1.0.0",
+    "node": ">=18.0.0"
+  },
+  "entryPoint": "index.ts",
+  "registerFunction": "registerSipEngineRoutes",
+  "database": {
+    "migrations": [
+      "migrations/001_sip_tables.sql"
+    ],
+    "tables": [
+      "sip_trunks",
+      "sip_phone_numbers",
+      "sip_calls"
+    ]
+  },
+  "routes": {
+    "api": [
+      {
+        "path": "/api/sip/trunks",
+        "description": "User SIP trunk management"
+      },
+      {
+        "path": "/api/sip/phone-numbers",
+        "description": "User SIP phone number management"
+      },
+      {
+        "path": "/api/admin/sip/settings",
+        "description": "Admin SIP settings"
+      },
+      {
+        "path": "/api/openai-sip/webhook",
+        "description": "OpenAI SIP webhook endpoints"
+      },
+      {
+        "path": "/api/openai-sip/stream",
+        "description": "OpenAI SIP WebSocket stream"
+      }
+    ]
+  },
+  "ui": {
+    "adminSettings": {
+      "tab": "sip-settings",
+      "label": "SIP Settings",
+      "component": "AdminSipSettingsTab"
+    },
+    "userSettings": {
+      "tab": "sip-trunks",
+      "label": "SIP Trunks",
+      "component": "UserSipTrunksTab"
+    },
+    "frontendBundle": "dist/bundle.js"
+  },
+  "permissions": {
+    "required": [
+      "session-auth-middleware",
+      "admin-auth-middleware"
+    ]
+  },
+  "features": [
+    "ElevenLabs SIP (Inbound + Outbound, 13 Providers)",
+    "OpenAI SIP (Incoming Calls Only)",
+    "Auto-provisioning SIP Endpoints",
+    "Multi-Provider Support (Twilio, Plivo, Telnyx, Vonage, etc.)",
+    "SIP Trunk Credential Management",
+    "SIP Phone Number Import",
+    "Plan-based SIP Access Control",
+    "Campaign Integration",
+    "Incoming Call Routing",
+    "Admin SIP Settings UI",
+    "User SIP Trunks UI"
+  ],
+  "engines": {
+    "elevenlabs-sip": {
+      "name": "ElevenLabs SIP",
+      "description": "Native SIP integration with ElevenLabs Conversational AI",
+      "inbound": true,
+      "outbound": true,
+      "requiresBridge": false
+    },
+    "openai-sip": {
+      "name": "OpenAI SIP",
+      "description": "OpenAI Realtime API for incoming SIP calls",
+      "inbound": true,
+      "outbound": false,
+      "requiresBridge": false
+    }
+  },
+  "providers": [
+    "twilio",
+    "plivo",
+    "telnyx",
+    "vonage",
+    "exotel",
+    "bandwidth",
+    "didww",
+    "zadarma",
+    "cloudonix",
+    "ringcentral",
+    "sinch",
+    "infobip",
+    "generic"
+  ],
+  "settings": {
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "label": "Enable SIP Engine Plugin",
+      "description": "Enable or disable the SIP engine plugin"
+    },
+    "defaultMaxConcurrentCalls": {
+      "type": "number",
+      "default": 10,
+      "label": "Default Max Concurrent SIP Calls",
+      "description": "Default concurrent SIP call limit per plan"
+    },
+    "mockMode": {
+      "type": "boolean",
+      "default": false,
+      "label": "Mock/Simulation Mode",
+      "description": "Enable mock mode for testing without real SIP credentials"
+    }
+  },
+  "environmentVariables": {
+    "required": [],
+    "optional": [
+      "SIP_MOCK_MODE",
+      "OPENAI_PROJECT_ID"
+    ]
+  }
+}

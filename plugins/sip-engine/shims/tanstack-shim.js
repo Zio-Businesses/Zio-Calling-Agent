@@ -1,0 +1,10 @@
+var TQ = window.TanStackReactQuery;
+export default TQ;
+export var useQuery = TQ.useQuery;
+export var useMutation = TQ.useMutation;
+export var useQueryClient = TQ.useQueryClient;
+export var QueryClient = TQ.QueryClient;
+export var QueryFunction = TQ.QueryFunction;
+export var QueryClientProvider = TQ.QueryClientProvider;
+export var useInfiniteQuery = TQ.useInfiniteQuery;
+export var useIsFetching = TQ.useIsFetching;

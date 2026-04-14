@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIP Engine Plugin - Documentation | {{app_name}}</title>
+    <style>
+        :root {
+            --primary: #0d9488;
+            --primary-light: #14b8a6;
+            --primary-dark: #0f766e;
+            --secondary: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --light: #f1f5f9;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: var(--white);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 60px 0;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            color: #ffffff;
+            max-width: 700px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-right: 8px;
+            margin-top: 16px;
+        }
+        
+        .badge-elevenlabs {
+            background: rgba(16, 185, 129, 0.3);
+        }
+        
+        .badge-openai {
+            background: rgba(139, 92, 246, 0.3);
+        }
+        
+        nav {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+            padding: 16px 0;
+            overflow-x: auto;
+        }
+        
+        nav a {
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: color 0.2s;
+        }
+        
+        nav a:hover {
+            color: var(--primary);
+        }
+        
+        main {
+            padding: 48px 0;
+        }
+        
+        section {
+            margin-bottom: 64px;
+        }
+        
+        h2 {
+            font-size: 1.75rem;
+            color: var(--dark);
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        h3 {
+            font-size: 1.25rem;
+            color: var(--dark);
+            margin: 32px 0 16px;
+        }
+        
+        h4 {
+            font-size: 1rem;
+            color: var(--gray);
+            margin: 24px 0 12px;
+        }
+        
+        p {
+            margin-bottom: 16px;
+            color: var(--gray);
+        }
+        
+        ul, ol {
+            margin-left: 24px;
+            margin-bottom: 16px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+            color: var(--gray);
+        }
+        
+        .quick-start {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border: 2px solid var(--secondary);
+            border-radius: 12px;
+            padding: 32px;
+            margin: 32px 0;
+        }
+        
+        .quick-start h3 {
+            color: var(--secondary);
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+        
+        .quick-start ol {
+            margin-left: 24px;
+        }
+        
+        .quick-start li {
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 24px 0;
+        }
+        
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .card h4 {
+            color: var(--dark);
+            margin: 0 0 8px;
+        }
+        
+        .card p {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        pre {
+            background: var(--dark);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        code {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: var(--light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .code-comment {
+            color: #6b7280;
+        }
+        
+        .code-string {
+            color: #a5d6ff;
+        }
+        
+        .code-keyword {
+            color: #ff7b72;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--light);
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        tr:hover td {
+            background: #f8fafc;
+        }
+        
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 24px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .alert-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .alert-info {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .alert-warning {
+            background: #fffbeb;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .alert-success {
+            background: #f0fdf4;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .alert-danger {
+            background: #fef2f2;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .steps {
+            counter-reset: step;
+            margin: 24px 0;
+        }
+        
+        .step {
+            position: relative;
+            padding-left: 60px;
+            padding-bottom: 32px;
+            border-left: 2px solid var(--border);
+            margin-left: 20px;
+        }
+        
+        .step:last-child {
+            border-left: none;
+            padding-bottom: 0;
+        }
+        
+        .step::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: -21px;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .step h4 {
+            margin-top: 0;
+            color: var(--dark);
+        }
+        
+        .endpoint {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        
+        .endpoint-method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            margin-right: 12px;
+        }
+        
+        .method-get { background: #dbeafe; color: #1d4ed8; }
+        .method-post { background: #dcfce7; color: #16a34a; }
+        .method-put { background: #fef3c7; color: #d97706; }
+        .method-delete { background: #fee2e2; color: #dc2626; }
+        
+        .endpoint-path {
+            font-family: monospace;
+            font-size: 1rem;
+            color: var(--dark);
+        }
+        
+        .comparison-table {
+            margin: 32px 0;
+        }
+        
+        .comparison-table th:first-child {
+            width: 40%;
+        }
+        
+        .comparison-table .yes {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .comparison-table .no {
+            color: var(--danger);
+            font-weight: 600;
+        }
+        
+        .engine-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .engine-elevenlabs {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .engine-openai {
+            background: #ede9fe;
+            color: #7c3aed;
+        }
+        
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .provider-item {
+            background: var(--light);
+            padding: 12px 16px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        footer {
+            background: var(--dark);
+            color: var(--white);
+            padding: 48px 0;
+            text-align: center;
+        }
+        
+        footer p {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        @media print {
+            header { padding: 30px 0; }
+            nav { display: none; }
+            .card:hover { transform: none; box-shadow: none; }
+            pre { white-space: pre-wrap; }
+        }
+        
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.75rem; }
+            nav ul { gap: 16px; }
+            .step { padding-left: 48px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>SIP Engine Plugin</h1>
+            <p>Bring your own SIP trunks to {{app_name}}. Connect with 13+ telephony providers using ElevenLabs SIP or OpenAI SIP for AI-powered voice calls.</p>
+            <span class="badge">Version 2.0.0</span>
+            <span class="badge badge-elevenlabs">ElevenLabs SIP</span>
+            <span class="badge badge-openai">OpenAI SIP</span>
+            <p style="margin-top: 12px; font-size: 0.85rem; opacity: 0.8;">Documentation updated February 2026 - v4.1.0 release</p>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#quick-start">Quick Start</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#elevenlabs-sip">ElevenLabs SIP</a></li>
+                <li><a href="#openai-sip">OpenAI SIP</a></li>
+                <li><a href="#providers">Providers</a></li>
+                <li><a href="#admin-settings">Admin Settings</a></li>
+                <li><a href="#api-reference">API Reference</a></li>
+                <li><a href="#security">Security</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+                <li><a href="#changelog">Changelog</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main>
+        <div class="container">
+            <!-- Overview -->
+            <section id="overview">
+                <h2>Overview</h2>
+                <p>The SIP Engine Plugin enables customers to use their own SIP trunks for AI-powered voice calls. This "bring your own trunk" capability provides flexibility, cost control, and enterprise integration.</p>
+                
+                <h3>Two Powerful Engines</h3>
+                
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th><span class="engine-badge engine-elevenlabs">ElevenLabs SIP</span></th>
+                            <th><span class="engine-badge engine-openai">OpenAI SIP</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Inbound Calls</td>
+                            <td class="yes">&#10004; Yes</td>
+                            <td class="yes">&#10004; Yes</td>
+                        </tr>
+                        <tr>
+                            <td>Outbound Calls</td>
+                            <td class="yes">&#10004; Yes</td>
+                            <td class="no">&#10006; No</td>
+                        </tr>
+                        <tr>
+                            <td>Bulk Campaigns</td>
+                            <td class="yes">&#10004; Yes</td>
+                            <td class="no">&#10006; No</td>
+                        </tr>
+                        <tr>
+                            <td>Agent Types</td>
+                            <td>Natural, Flow, Incoming</td>
+                            <td>Natural (Incoming)</td>
+                        </tr>
+                        <tr>
+                            <td>Recordings Available</td>
+                            <td class="yes">&#10004; Server-side via ElevenLabs API</td>
+                            <td class="no">&#10006; No server-side recordings (transcripts available)</td>
+                        </tr>
+                        <tr>
+                            <td>Provisioning Level</td>
+                            <td>Per phone number (individual config)</td>
+                            <td>Per project (shared webhook/SIP endpoint)</td>
+                        </tr>
+                        <tr>
+                            <td>Real-time Streaming</td>
+                            <td>Via ElevenLabs WebSocket</td>
+                            <td>Via OpenAI Realtime WebSocket (<code>/api/openai-sip/stream/:callId</code>)</td>
+                        </tr>
+                        <tr>
+                            <td>Use Case</td>
+                            <td>Full telephony solution</td>
+                            <td>Incoming call handling</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="card-grid">
+                    <div class="card">
+                        <div class="card-icon">&#128222;</div>
+                        <h4>Bring Your Own Trunk</h4>
+                        <p>Use phone numbers from your existing SIP provider. Keep your current telephony setup while adding AI capabilities.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">&#127757;</div>
+                        <h4>13 SIP Providers</h4>
+                        <p>Pre-configured support for Twilio, Plivo, Telnyx, Vonage, Bandwidth, and 8 more providers with auto-fill defaults.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">&#128227;</div>
+                        <h4>Campaign Integration</h4>
+                        <p>Use ElevenLabs SIP phone numbers for bulk outbound campaigns with concurrent call limits and scheduling.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">&#9989;</div>
+                        <h4>Plan-Based Access</h4>
+                        <p>Control SIP access per subscription plan. Set maximum trunks, phone numbers, and concurrent call limits.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">&#128274;</div>
+                        <h4>Secure by Design</h4>
+                        <p>Webhook signature verification and TLS transport. Recommend database encryption at rest for credentials.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">&#127899;</div>
+                        <h4>Easy Provisioning</h4>
+                        <p>Import phone numbers with one click. Automatic SIP endpoint configuration in ElevenLabs or OpenAI.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Quick Start -->
+            <section id="quick-start">
+                <h2>Quick Start Guide</h2>
+                <p>Get SIP calling working in under 10 minutes. Choose your engine based on your needs.</p>
+                
+                <div class="quick-start">
+                    <h3>ElevenLabs SIP (Inbound + Outbound)</h3>
+                    <ol>
+                        <li><strong>Verify ElevenLabs API Key</strong> is configured in Admin Settings (required)</li>
+                        <li><strong>Go to Phone Numbers</strong> &rarr; <strong>SIP Trunks</strong> tab in user dashboard</li>
+                        <li><strong>Click "Add SIP Trunk"</strong> and select ElevenLabs SIP engine</li>
+                        <li><strong>Select your provider</strong> (Twilio, Plivo, etc.) - defaults auto-fill</li>
+                        <li><strong>Enter credentials</strong> from your SIP provider account</li>
+                        <li><strong>Import phone numbers</strong> and assign AI agents</li>
+                        <li><strong>Configure your provider</strong> to route calls to: <code>sip.rtc.elevenlabs.io:5061</code></li>
+                    </ol>
+                </div>
+                
+                <div class="quick-start" style="border-color: #8b5cf6; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);">
+                    <h3 style="color: #7c3aed;">OpenAI SIP (Incoming Only)</h3>
+                    <ol>
+                        <li><strong>Get your OpenAI Project ID</strong> from platform.openai.com</li>
+                        <li><strong>Configure Admin Settings</strong> &rarr; SIP Engine &rarr; OpenAI SIP Setup</li>
+                        <li><strong>Enter Project ID</strong> and save to generate endpoints</li>
+                        <li><strong>Create a webhook</strong> in OpenAI Platform with the provided URL</li>
+                        <li><strong>Copy the Webhook Secret</strong> and save it in {{app_name}}</li>
+                        <li><strong>Create SIP Trunk</strong> with OpenAI SIP engine in user dashboard</li>
+                        <li><strong>Configure your provider</strong> to route calls to: <code>sip:PROJECT_ID@sip.api.openai.com</code></li>
+                    </ol>
+                </div>
+                
+                <div class="alert alert-info">
+                    <span class="alert-icon">&#128161;</span>
+                    <div>
+                        <strong>Which Engine Should I Use?</strong><br>
+                        Use <strong>ElevenLabs SIP</strong> if you need outbound calling, campaigns, or Flow agents.<br>
+                        Use <strong>OpenAI SIP</strong> if you only need incoming calls with GPT Realtime.
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Installation -->
+            <section id="installation">
+                <h2>Installation</h2>
+                <p>Choose your preferred installation method. The Admin UI installer is recommended for most users.</p>
+                
+                <h3>Method 1: Admin UI Installer (Recommended)</h3>
+                <div class="alert alert-success">
+                    <span class="alert-icon">&#9989;</span>
+                    <div>
+                        <strong>Easiest Method</strong> - Upload the plugin ZIP file directly from your browser. Database migrations run automatically.
+                    </div>
+                </div>
+                <div class="steps">
+                    <div class="step">
+                        <h4>Open Plugin Installer</h4>
+                        <p>Log in as an administrator and go to <strong>Admin Panel</strong> &rarr; <strong>Settings</strong> &rarr; <strong>Plugins</strong> tab.</p>
+                    </div>
+                    <div class="step">
+                        <h4>Upload Plugin ZIP</h4>
+                        <p>Click <strong>"Upload Plugin"</strong> and select the <code>{{app_name}}-SIPEngine-Plugin-v2.0.0.zip</code> file. The installer validates the manifest, extracts files, and runs database migrations automatically.</p>
+                    </div>
+                    <div class="step">
+                        <h4>Restart Application</h4>
+                        <p>Restart your {{app_name}} server to load the plugin:</p>
+<pre>
+pm2 restart app
+</pre>
+                    </div>
+                    <div class="step">
+                        <h4>Verify Installation</h4>
+                        <p>Check the plugin health endpoint:</p>
+<pre>
+curl https://your-domain.com/api/plugins/health
+</pre>
+                        <p>The SIP Engine should show as "installed" with all tables reporting "ok".</p>
+                    </div>
+                </div>
+                
+                <h3>Method 2: Manual Installation (SSH)</h3>
+                <div class="alert alert-info">
+                    <span class="alert-icon">&#128161;</span>
+                    <div>
+                        <strong>For advanced users</strong> who prefer command-line installation or need to customize the process.
+                    </div>
+                </div>
+                <div class="steps">
+                    <div class="step">
+                        <h4>Extract Plugin Files</h4>
+                        <p>Upload and extract the plugin ZIP on your server:</p>
+<pre>
+cd /path/to/app
+unzip {{app_name}}-SIPEngine-Plugin-v2.0.0.zip -d plugins/
+</pre>
+                        <p>Verify the folder structure:</p>
+<pre>
+plugins/
+  sip-engine/
+    index.ts / index.js
+    plugin.json
+    routes/
+    services/
+    ui/
+    migrations/
+    dist/
+</pre>
+                    </div>
+                    <div class="step">
+                        <h4>Run Database Migration</h4>
+                        <p>Execute the SQL migration to create the required tables:</p>
+<pre>
+psql $DATABASE_URL -f plugins/sip-engine/migrations/001_sip_tables.sql
+</pre>
+                        <p>This creates the following tables:</p>
+                        <ul>
+                            <li><code>sip_trunks</code> - SIP trunk configurations</li>
+                            <li><code>sip_phone_numbers</code> - Imported phone numbers</li>
+                            <li><code>sip_calls</code> - SIP call logs and transcripts</li>
+                        </ul>
+                    </div>
+                    <div class="step">
+                        <h4>Restart Application</h4>
+                        <p>Restart your {{app_name}} server to load the plugin:</p>
+<pre>
+<span class="code-comment"># Production</span>
+pm2 restart app
+
+<span class="code-comment"># Development</span>
+npm run dev
+</pre>
+                    </div>
+                    <div class="step">
+                        <h4>Verify Installation</h4>
+                        <p>Check server logs for successful plugin registration:</p>
+<pre>
+[SIP Engine] Plugin registered (v2.0.0)
+[SIP Engine] Endpoints:
+  - /api/sip/trunks (user auth)
+  - /api/sip/phone-numbers (user auth)
+  - /api/admin/sip (admin auth)
+  - /api/openai-sip (webhooks)
+</pre>
+                    </div>
+                </div>
+                
+                <h3>Upgrading from Previous Versions</h3>
+                <div class="alert alert-warning">
+                    <span class="alert-icon">&#9888;</span>
+                    <div>
+                        <strong>Upgrading?</strong> If you already have the SIP Engine plugin installed, simply upload the new ZIP via Admin UI or replace the files manually. Existing database tables and data will be preserved.
+                    </div>
+                </div>
+                
+                <h3>Environment Variables</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Variable</th>
+                            <th>Description</th>
+                            <th>Default</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>SIP_MOCK_MODE</code></td>
+                            <td>Enable mock/simulation mode for testing without real SIP credentials. Useful for development.</td>
+                            <td><code>false</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>OPENAI_PROJECT_ID</code></td>
+                            <td>OpenAI Project ID for SIP (can also be set in admin UI). Required for OpenAI SIP engine.</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Plugin Settings (plugin.json)</h3>
+                <p>The following settings can be configured in the plugin manifest:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>enabled</code></td>
+                            <td>boolean</td>
+                            <td><code>true</code></td>
+                            <td>Enable or disable the SIP Engine Plugin globally</td>
+                        </tr>
+                        <tr>
+                            <td><code>defaultMaxConcurrentCalls</code></td>
+                            <td>number</td>
+                            <td><code>10</code></td>
+                            <td>Default concurrent SIP call limit per plan (can be overridden per plan)</td>
+                        </tr>
+                        <tr>
+                            <td><code>mockMode</code></td>
+                            <td>boolean</td>
+                            <td><code>false</code></td>
+                            <td>Enable mock mode for testing without real SIP credentials</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Plan Configuration</h3>
+                <p>Configure SIP access limits per subscription plan in Admin &rarr; Plans:</p>
+                <ul>
+                    <li><strong>SIP Enabled</strong> - Whether the plan includes SIP access</li>
+                    <li><strong>Max SIP Trunks</strong> - Maximum trunks per user</li>
+                    <li><strong>Max SIP Phone Numbers</strong> - Maximum phone numbers per user</li>
+                    <li><strong>Max Concurrent SIP Calls</strong> - Concurrent call limit</li>
+                    <li><strong>Allowed Engines</strong> - Which SIP engines users can access (ElevenLabs SIP, OpenAI SIP, or both)</li>
+                </ul>
+            </section>
+            
+            <!-- ElevenLabs SIP -->
+            <section id="elevenlabs-sip">
+                <h2>ElevenLabs SIP Setup</h2>
+                <p>ElevenLabs SIP provides full inbound and outbound calling capabilities using ElevenLabs Conversational AI.</p>
+                
+                <div class="alert alert-success">
+                    <span class="alert-icon">&#10004;</span>
+                    <div>
+                        <strong>Recommended for Most Users</strong><br>
+                        ElevenLabs SIP supports both inbound and outbound calls, campaign integration, and all agent types.
+                    </div>
+                </div>
+                
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>ElevenLabs account with Conversational AI access</li>
+                    <li>ElevenLabs API key configured in {{app_name}} admin settings</li>
+                    <li>SIP trunk provider account (Twilio, Plivo, Telnyx, etc.)</li>
+                    <li>Phone numbers from your SIP provider</li>
+                </ul>
+                
+                <h3>Step-by-Step Configuration</h3>
+                
+                <div class="steps">
+                    <div class="step">
+                        <h4>Configure Your SIP Provider</h4>
+                        <p>Set up your SIP trunk in your provider's dashboard:</p>
+                        <p><strong>Twilio:</strong> Go to Elastic SIP Trunking &rarr; Create Trunk &rarr; Configure credentials</p>
+                        <p><strong>Plivo:</strong> Go to Voice &rarr; SIP Trunk &rarr; Create SIP Endpoint</p>
+                        <p><strong>Telnyx:</strong> Go to SIP Trunking &rarr; Create Connection</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>Create SIP Trunk in {{app_name}}</h4>
+                        <p>Navigate to Phone Numbers &rarr; SIP Trunks tab:</p>
+                        <ol>
+                            <li>Click <strong>Add SIP Trunk</strong></li>
+                            <li>Enter a descriptive name (e.g., "Twilio Production")</li>
+                            <li>Select <strong>ElevenLabs SIP</strong> as the engine</li>
+                            <li>Select your SIP provider from the dropdown</li>
+                            <li>Enter your SIP credentials (username/password if required)</li>
+                            <li>Click <strong>Create Trunk</strong></li>
+                        </ol>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>Import Phone Numbers</h4>
+                        <p>With your trunk created, import your phone numbers:</p>
+                        <ol>
+                            <li>Click <strong>Import Number</strong></li>
+                            <li>Select the SIP trunk to use</li>
+                            <li>Enter phone number in E.164 format: <code>+14155551234</code></li>
+                            <li>Add an optional label for identification</li>
+                            <li>Select an AI agent to handle calls</li>
+                            <li>Click <strong>Import</strong></li>
+                        </ol>
+                        <p>The system automatically provisions the phone number in ElevenLabs.</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>Configure Inbound Call Routing</h4>
+                        <p>In your SIP provider, route incoming calls to ElevenLabs:</p>
+<pre>
+<span class="code-comment"># ElevenLabs Inbound SIP URI</span>
+TLS (Recommended): sip:sip.rtc.elevenlabs.io:5061;transport=tls
+TCP: sip:sip.rtc.elevenlabs.io:5060;transport=tcp
+</pre>
+                        <div class="alert alert-warning">
+                            <span class="alert-icon">&#9888;</span>
+                            <div>
+                                <strong>Important:</strong> Your Origination URI transport (TLS/TCP) must match your trunk's Transport setting in {{app_name}}!
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>Test Your Setup</h4>
+                        <p>Make a test call to your imported phone number:</p>
+                        <ol>
+                            <li>Call the number from any phone</li>
+                            <li>The call routes through your SIP provider to ElevenLabs</li>
+                            <li>Your AI agent handles the conversation</li>
+                            <li>Check call logs in {{app_name}} for status and transcript</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <h3>Re-Provisioning Phone Numbers</h3>
+                <p>If you update your trunk configuration (credentials, transport, etc.), you need to sync these changes to all phone numbers:</p>
+                <ol>
+                    <li>Go to SIP Trunks tab</li>
+                    <li>Click the <strong>Re-provision All</strong> button (server icon) on your trunk</li>
+                    <li>This updates all phone numbers with the new SIP configuration</li>
+                </ol>
+                
+                <h3>Outbound Calling</h3>
+                <p>ElevenLabs SIP supports outbound calls from campaigns:</p>
+                <ul>
+                    <li>Create a campaign and select an agent with an ElevenLabs SIP phone number</li>
+                    <li>Upload contacts or add them manually</li>
+                    <li>Start the campaign - calls will dial out via your SIP trunk</li>
+                </ul>
+            </section>
+            
+            <!-- OpenAI SIP -->
+            <section id="openai-sip">
+                <h2>OpenAI SIP Setup</h2>
+                <p>OpenAI SIP enables <strong>incoming calls only</strong> using OpenAI's native Realtime SIP integration with GPT Realtime.</p>
+                
+                <div class="alert alert-warning">
+                    <span class="alert-icon">&#9888;</span>
+                    <div>
+                        <strong>Incoming Calls Only</strong><br>
+                        OpenAI SIP does not support outbound calling or campaigns. Use ElevenLabs SIP if you need outbound capabilities.
+                    </div>
+                </div>
+                
+                <h3>Prerequisites</h3>
+                <ul>
+                    <li>OpenAI Platform account with Realtime API access</li>
+                    <li>OpenAI Project with billing enabled</li>
+                    <li>SIP trunk provider account</li>
+                    <li>Phone numbers from your SIP provider</li>
+                </ul>
+                
+                <h3>Admin Configuration</h3>
+                
+                <div class="steps">
+                    <div class="step">
+                        <h4>Get Your OpenAI Project ID</h4>
+                        <p>In <a href="https://platform.openai.com" target="_blank">platform.openai.com</a>:</p>
+                        <ol>
+                            <li>Go to <strong>Settings</strong> &rarr; <strong>Project</strong> &rarr; <strong>General</strong></li>
+                            <li>Find your <strong>Project ID</strong> (starts with <code>proj_</code>)</li>
+                            <li>Copy this ID</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>Configure in {{app_name}} Admin</h4>
+                        <p>Go to Admin Panel &rarr; Plugins &rarr; SIP Engine &rarr; OpenAI SIP Setup:</p>
+                        <ol>
+                            <li>Enter your <strong>OpenAI Project ID</strong></li>
+                            <li>Click <strong>Save</strong></li>
+                            <li>Copy the generated <strong>SIP Endpoint</strong> and <strong>Webhook URL</strong></li>
+                        </ol>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>Create Webhook in OpenAI Platform</h4>
+                        <p>In OpenAI Platform, go to <strong>Settings</strong> &rarr; <strong>Webhooks</strong>:</p>
+                        <ol>
+                            <li>Click <strong>Add Webhook</strong></li>
+                            <li>Enter the Webhook URL from {{app_name}}</li>
+                            <li>Select event: <code>realtime.call.incoming</code></li>
+                            <li>Save and copy the <strong>Webhook Secret</strong></li>
+                        </ol>
+                    </div>
+                    
+                    <div class="step">
+                        <h4>Save Webhook Secret</h4>
+                        <p>Back in {{app_name}} Admin &rarr; SIP Engine &rarr; OpenAI SIP Setup:</p>
+                        <ol>
+                            <li>Enter the <strong>Webhook Secret</strong> from OpenAI</li>
+                            <li>Click <strong>Save</strong></li>
+                        </ol>
+                        <div class="alert alert-danger">
+                            <span class="alert-icon">&#128274;</span>
+                            <div>
+                                <strong>Security Warning:</strong> Without a webhook secret, incoming requests cannot be verified. Always configure the webhook secret before going to production.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>User SIP Trunk Configuration</h3>
+                <p>Once admin setup is complete, users can create OpenAI SIP trunks:</p>
+                <ol>
+                    <li>Go to <strong>Phone Numbers</strong> &rarr; <strong>SIP Trunks</strong></li>
+                    <li>Click <strong>Add SIP Trunk</strong></li>
+                    <li>Select <strong>OpenAI SIP</strong> as the engine</li>
+                    <li>Select your SIP provider and enter credentials</li>
+                    <li>Import phone numbers and assign agents</li>
+                </ol>
+                
+                <h3>Configure Your SIP Provider</h3>
+                <p>Point your SIP trunk to the OpenAI SIP endpoint:</p>
+<pre>
+sip:PROJECT_ID@sip.api.openai.com;transport=tls
+</pre>
+                <p>Replace <code>PROJECT_ID</code> with your actual OpenAI Project ID.</p>
+                
+                <h3>Phone Number Format Matching</h3>
+                <p>The system automatically handles different phone number formats:</p>
+                <ul>
+                    <li><code>+14155551234</code> (with plus)</li>
+                    <li><code>14155551234</code> (without plus)</li>
+                    <li><code>4155551234</code> (digits only)</li>
+                </ul>
+                <p>All formats are normalized during lookup to ensure calls connect properly.</p>
+            </section>
+            
+            <!-- Providers -->
+            <section id="providers">
+                <h2>Supported SIP Providers</h2>
+                <p>The SIP Engine Plugin supports 13 pre-configured providers with auto-fill defaults for easy setup.</p>
+                
+                <div class="provider-grid">
+                    <div class="provider-item">Twilio</div>
+                    <div class="provider-item">Plivo</div>
+                    <div class="provider-item">Telnyx</div>
+                    <div class="provider-item">Vonage</div>
+                    <div class="provider-item">Bandwidth</div>
+                    <div class="provider-item">Exotel</div>
+                    <div class="provider-item">DIDWW</div>
+                    <div class="provider-item">Zadarma</div>
+                    <div class="provider-item">Cloudonix</div>
+                    <div class="provider-item">RingCentral</div>
+                    <div class="provider-item">Sinch</div>
+                    <div class="provider-item">Infobip</div>
+                    <div class="provider-item">Generic</div>
+                </div>
+                
+                <h3>Provider Configuration Details</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Default Host</th>
+                            <th>Port</th>
+                            <th>Transport</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Twilio</strong></td>
+                            <td><code>sip.twilio.com</code></td>
+                            <td>5061</td>
+                            <td>TLS</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Plivo</strong></td>
+                            <td><code>sip.plivo.com</code></td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Telnyx</strong></td>
+                            <td><code>sip.telnyx.com</code></td>
+                            <td>5061</td>
+                            <td>TLS</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Vonage</strong></td>
+                            <td><code>sip.vonage.com</code></td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bandwidth</strong></td>
+                            <td><code>sip.bandwidth.com</code></td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Exotel</strong></td>
+                            <td><code>sip.exotel.com</code></td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DIDWW</strong></td>
+                            <td><code>sip.didww.com</code></td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Zadarma</strong></td>
+                            <td><code>sip.zadarma.com</code></td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cloudonix</strong></td>
+                            <td><code>sip.cloudonix.io</code></td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RingCentral</strong></td>
+                            <td><code>sip.ringcentral.com</code></td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sinch</strong></td>
+                            <td><code>sip.sinch.com</code></td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Infobip</strong></td>
+                            <td><code>sip.infobip.com</code></td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Generic</strong></td>
+                            <td>(custom)</td>
+                            <td>5060</td>
+                            <td>TCP</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Using a Custom Provider</h3>
+                <p>For providers not in the list, select <strong>Generic</strong> and enter:</p>
+                <ul>
+                    <li><strong>SIP Host</strong> - Your provider's SIP server hostname</li>
+                    <li><strong>SIP Port</strong> - Usually 5060 (TCP) or 5061 (TLS)</li>
+                    <li><strong>Transport</strong> - TCP or TLS</li>
+                    <li><strong>Username/Password</strong> - If required by your provider</li>
+                </ul>
+            </section>
+            
+            <!-- Admin Settings -->
+            <section id="admin-settings">
+                <h2>Admin Settings</h2>
+                <p>Administrators configure global SIP settings and manage user access.</p>
+                
+                <h3>Accessing SIP Admin Settings</h3>
+                <ol>
+                    <li>Log in as an administrator</li>
+                    <li>Go to <strong>Admin Panel</strong> &rarr; <strong>Plugins</strong></li>
+                    <li>Click on <strong>SIP Engine</strong></li>
+                </ol>
+                
+                <h3>OpenAI SIP Configuration</h3>
+                <p>Configure OpenAI SIP for the entire platform:</p>
+                <ul>
+                    <li><strong>OpenAI Project ID</strong> - Your OpenAI project identifier</li>
+                    <li><strong>Webhook Secret</strong> - For verifying incoming webhooks (required for security)</li>
+                </ul>
+                
+                <h3>Plan SIP Limits</h3>
+                <p>Go to <strong>Admin</strong> &rarr; <strong>Plans</strong> to configure per-plan limits:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Setting</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SIP Enabled</td>
+                            <td>Whether users on this plan can access SIP features</td>
+                        </tr>
+                        <tr>
+                            <td>Max SIP Trunks</td>
+                            <td>Maximum number of SIP trunks per user</td>
+                        </tr>
+                        <tr>
+                            <td>Max SIP Phone Numbers</td>
+                            <td>Maximum phone numbers per user</td>
+                        </tr>
+                        <tr>
+                            <td>Max Concurrent SIP Calls</td>
+                            <td>Concurrent call limit for campaigns</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Viewing User Trunks</h3>
+                <p>Administrators can view all user SIP trunks and phone numbers:</p>
+                <ol>
+                    <li>Go to <strong>Admin</strong> &rarr; <strong>Plugins</strong> &rarr; <strong>SIP Engine</strong></li>
+                    <li>Switch to <strong>User Trunks</strong> tab</li>
+                    <li>View all trunks with user information, status, and phone number counts</li>
+                </ol>
+            </section>
+            
+            <!-- API Reference -->
+            <section id="api-reference">
+                <h2>API Reference</h2>
+                <p>The SIP Engine provides REST APIs for managing trunks and phone numbers programmatically.</p>
+                
+                <h3>SIP Trunks</h3>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-get">GET</span>
+                    <span class="endpoint-path">/api/sip/trunks</span>
+                    <p>List all SIP trunks for the authenticated user.</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-post">POST</span>
+                    <span class="endpoint-path">/api/sip/trunks</span>
+                    <p>Create a new SIP trunk.</p>
+                </div>
+                
+<pre>
+{
+  "name": "Production Trunk",
+  "engine": "elevenlabs-sip",
+  "provider": "twilio",
+  "sipHost": "sip.twilio.com",
+  "sipPort": 5061,
+  "transport": "tls",
+  "username": "your-username",
+  "password": "your-password"
+}
+</pre>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-put">PUT</span>
+                    <span class="endpoint-path">/api/sip/trunks/:id</span>
+                    <p>Update an existing SIP trunk.</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-delete">DELETE</span>
+                    <span class="endpoint-path">/api/sip/trunks/:id</span>
+                    <p>Delete a SIP trunk and all associated phone numbers.</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-post">POST</span>
+                    <span class="endpoint-path">/api/sip/trunks/:id/test</span>
+                    <p>Test the SIP trunk connection.</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-post">POST</span>
+                    <span class="endpoint-path">/api/sip/trunks/:id/reprovision-all</span>
+                    <p>Re-provision all phone numbers on this trunk (sync SIP config changes).</p>
+                </div>
+                
+                <h3>SIP Phone Numbers</h3>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-get">GET</span>
+                    <span class="endpoint-path">/api/sip/phone-numbers</span>
+                    <p>List all SIP phone numbers for the authenticated user.</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-post">POST</span>
+                    <span class="endpoint-path">/api/sip/phone-numbers/import</span>
+                    <p>Import a phone number to a SIP trunk.</p>
+                </div>
+                
+<pre>
+{
+  "sipTrunkId": "trunk-uuid-here",
+  "phoneNumber": "+14155551234",
+  "label": "Sales Line",
+  "agentId": "agent-uuid-here"
+}
+</pre>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-post">POST</span>
+                    <span class="endpoint-path">/api/sip/phone-numbers/:id/assign-agent</span>
+                    <p>Assign or update the AI agent for a phone number.</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-post">POST</span>
+                    <span class="endpoint-path">/api/sip/phone-numbers/:id/reprovision</span>
+                    <p>Re-provision a single phone number's SIP configuration.</p>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="endpoint-method method-delete">DELETE</span>
+                    <span class="endpoint-path">/api/sip/phone-numbers/:id</span>
+                    <p>Delete a phone number from the SIP trunk.</p>
+                </div>
+                
+                <h3>Rate Limiting</h3>
+                <p>The phone number import endpoint is rate-limited to prevent abuse:</p>
+                <ul>
+                    <li><strong>Limit:</strong> 10 imports per minute per user</li>
+                    <li><strong>Response:</strong> HTTP 429 when exceeded</li>
+                </ul>
+            </section>
+            
+            <!-- Security -->
+            <section id="security">
+                <h2>Security Best Practices</h2>
+                <p>Follow these security recommendations to protect your SIP infrastructure.</p>
+                
+                <div class="alert alert-danger">
+                    <span class="alert-icon">&#128274;</span>
+                    <div>
+                        <strong>Critical Security Requirements</strong><br>
+                        Always configure webhook secrets and use TLS transport in production environments. Failure to do so may expose your system to unauthorized access.
+                    </div>
+                </div>
+                
+                <h3>Credential Storage</h3>
+                <ul>
+                    <li><strong>Database Security:</strong> SIP trunk credentials are stored in the database. Ensure your PostgreSQL database uses encryption at rest for production deployments.</li>
+                    <li><strong>API Protection:</strong> Credentials are not exposed in API list responses; only returned during trunk creation/update operations</li>
+                    <li><strong>Secure Transmission:</strong> All API communications should use HTTPS/TLS in production</li>
+                </ul>
+                
+                <h3>Webhook Verification (OpenAI SIP)</h3>
+                <p>OpenAI SIP uses webhook callbacks for incoming call events. <strong>Always configure the webhook secret</strong> to verify request authenticity:</p>
+                <ol>
+                    <li>When you create a webhook in OpenAI Platform, a signing secret is generated</li>
+                    <li>Enter this secret in {{app_name}} Admin &rarr; SIP Engine &rarr; OpenAI SIP Setup</li>
+                    <li>All incoming webhook requests are verified using HMAC-SHA256 signature</li>
+                    <li>Requests with invalid or missing signatures are rejected</li>
+                </ol>
+                <div class="alert alert-warning">
+                    <span class="alert-icon">&#9888;</span>
+                    <div>
+                        <strong>Without a webhook secret:</strong> Incoming webhook requests cannot be verified, potentially allowing unauthorized parties to trigger fake call events or access your agents.
+                    </div>
+                </div>
+                
+                <h3>Transport Security</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Transport</th>
+                            <th>Port</th>
+                            <th>Encryption</th>
+                            <th>Recommendation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>TLS</strong></td>
+                            <td>5061</td>
+                            <td>Full encryption</td>
+                            <td class="yes">&#10004; Recommended for production</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TCP</strong></td>
+                            <td>5060</td>
+                            <td>None</td>
+                            <td class="no">Use only when TLS unavailable</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>IP Allowlisting</h3>
+                <p>For additional security, configure IP allowlisting in your SIP provider:</p>
+                <ul>
+                    <li><strong>ElevenLabs SIP:</strong> Restrict origination to ElevenLabs IP ranges</li>
+                    <li><strong>OpenAI SIP:</strong> Restrict to OpenAI's documented IP ranges</li>
+                    <li>Consult your SIP provider's documentation for IP ACL configuration</li>
+                </ul>
+                
+                <h3>API Rate Limiting</h3>
+                <p>The SIP Engine includes built-in rate limiting to prevent abuse:</p>
+                <ul>
+                    <li><strong>Phone Number Import:</strong> 10 imports per minute per user</li>
+                    <li><strong>Trunk Operations:</strong> Standard API rate limits apply</li>
+                    <li>Exceeding limits returns HTTP 429 (Too Many Requests)</li>
+                </ul>
+                
+                <h3>Security Checklist</h3>
+                <div class="quick-start" style="border-color: var(--danger); background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);">
+                    <h3 style="color: var(--danger);">Production Security Checklist</h3>
+                    <ol>
+                        <li><strong>Use TLS transport</strong> for all SIP trunks when your provider supports it</li>
+                        <li><strong>Configure webhook secret</strong> for OpenAI SIP (required for security)</li>
+                        <li><strong>Use strong passwords</strong> for SIP authentication credentials</li>
+                        <li><strong>Enable IP allowlisting</strong> in your SIP provider dashboard</li>
+                        <li><strong>Regularly rotate credentials</strong> - update passwords periodically</li>
+                        <li><strong>Monitor call logs</strong> for suspicious activity</li>
+                        <li><strong>Review user access</strong> to SIP features via plan configurations</li>
+                    </ol>
+                </div>
+            </section>
+            
+            <!-- Troubleshooting -->
+            <section id="troubleshooting">
+                <h2>Troubleshooting</h2>
+                
+                <h3>Phone Number Import Fails</h3>
+                <ul>
+                    <li>Verify ElevenLabs API key is configured in admin settings</li>
+                    <li>Check API key has Conversational AI permissions</li>
+                    <li>Ensure phone number format is E.164 (<code>+</code> followed by digits)</li>
+                    <li>Check if you've exceeded the import rate limit (10/minute)</li>
+                </ul>
+                
+                <h3>Inbound Calls Not Connecting</h3>
+                <ul>
+                    <li>Verify SIP trunk credentials are correct</li>
+                    <li>Check your SIP provider's termination/routing is configured correctly</li>
+                    <li>Ensure transport (TLS/TCP) matches between provider and trunk settings</li>
+                    <li>For ElevenLabs: Use <code>sip.rtc.elevenlabs.io</code> (not the old <code>sip.elevenlabs.io</code>)</li>
+                    <li>For OpenAI: Verify webhook secret is configured</li>
+                </ul>
+                
+                <h3>Outbound Calls Failing (ElevenLabs SIP)</h3>
+                <ul>
+                    <li>Verify phone number has outbound enabled</li>
+                    <li>Check SIP trunk credentials</li>
+                    <li>Ensure sufficient credits in ElevenLabs account</li>
+                    <li>Review call logs for specific error codes</li>
+                </ul>
+                
+                <h3>OpenAI Webhook Not Receiving Events</h3>
+                <ul>
+                    <li>Verify webhook URL is publicly accessible (not localhost)</li>
+                    <li>Check webhook secret matches between OpenAI and {{app_name}}</li>
+                    <li>Ensure SSL certificate is valid</li>
+                    <li>Check OpenAI Platform webhook delivery logs</li>
+                </ul>
+                
+                <h3>Agent Not Responding</h3>
+                <ul>
+                    <li>Verify agent is assigned to the phone number</li>
+                    <li>Check agent has a valid system prompt configured</li>
+                    <li>For OpenAI SIP: Agent must be a "Natural" type agent</li>
+                    <li>Review call logs in {{app_name}} for error details</li>
+                </ul>
+                
+                <h3>Audio Quality Issues</h3>
+                <ul>
+                    <li>Use TLS transport when available (more reliable)</li>
+                    <li>Check codec compatibility (G.711 recommended)</li>
+                    <li>Verify media encryption settings match provider</li>
+                    <li>Check network connectivity and firewall rules</li>
+                </ul>
+                
+                <h3>Recordings Not Available (OpenAI SIP)</h3>
+                <p>This is expected behavior. OpenAI SIP calls use WebRTC browser-to-browser connections, which means:</p>
+                <ul>
+                    <li>No server-side recordings are available</li>
+                    <li>Transcripts are still available from OpenAI</li>
+                    <li>If you need recordings, use ElevenLabs SIP instead</li>
+                </ul>
+            </section>
+            
+            <!-- FAQ -->
+            <section id="faq">
+                <h2>Frequently Asked Questions</h2>
+                
+                <h3>Can I use my existing phone numbers?</h3>
+                <p>Yes! The SIP Engine allows you to use phone numbers from your existing SIP provider. Just import them into {{app_name}}.</p>
+                
+                <h3>Which engine should I choose?</h3>
+                <p>Use <strong>ElevenLabs SIP</strong> for most use cases - it supports both inbound and outbound calls, campaigns, and all agent types. Use <strong>OpenAI SIP</strong> only if you specifically want to use GPT Realtime for incoming calls.</p>
+                
+                <h3>Can I use multiple SIP providers?</h3>
+                <p>Yes! You can create multiple SIP trunks with different providers. Each phone number is associated with one trunk.</p>
+                
+                <h3>Are credentials stored securely?</h3>
+                <p>SIP trunk credentials are stored in the database. For production deployments, ensure your PostgreSQL database uses encryption at rest and configure proper access controls.</p>
+                
+                <h3>What happens if I update my trunk credentials?</h3>
+                <p>After updating credentials, use the "Re-provision All" button to sync the changes to all phone numbers on that trunk.</p>
+                
+                <h3>Can I use SIP phone numbers in campaigns?</h3>
+                <p>Yes, but only with <strong>ElevenLabs SIP</strong> phone numbers. OpenAI SIP only supports incoming calls.</p>
+                
+                <h3>What's the difference between provisioning per trunk vs per number?</h3>
+                <p><strong>ElevenLabs SIP</strong> provisions each phone number individually, giving you granular control. <strong>OpenAI SIP</strong> provisions at the project level - all numbers share the same configuration.</p>
+                
+                <h3>My provider isn't in the list. What do I do?</h3>
+                <p>Select <strong>Generic</strong> and manually enter your provider's SIP server details (host, port, transport).</p>
+            </section>
+            
+            <section id="changelog">
+                <h2>Changelog</h2>
+                
+                <h3>v2.0.0 - February 2026</h3>
+                <h4>Added</h4>
+                <ul>
+                    <li><strong>Admin UI Plugin Installer</strong> - Upload plugin ZIP files directly from Admin Panel &rarr; Settings &rarr; Plugins. Automatic manifest validation, file extraction, and database migration execution.</li>
+                    <li><strong>Provider hostname validation</strong> - Backend and frontend regex validation for SIP trunk hostnames/IPs per provider.</li>
+                    <li><strong>Phone number import validation</strong> - E.164 format enforcement (7-15 digits, must start with country code) with inline error feedback.</li>
+                    <li><strong>Duplicate phone number detection</strong> - Digits-only normalization prevents importing the same number twice.</li>
+                    <li><strong>Country code validation</strong> - Validates country codes against known list during number import.</li>
+                    <li><strong>Inline feedback for trunk actions</strong> - Success/error messages with latency display for test connection and re-provision actions.</li>
+                    <li><strong>Toast notification support</strong> - Plugin now uses shared toast system via <code>window.__AGENTLABS_TOAST__</code> for consistent notifications.</li>
+                </ul>
+                <h4>Changed</h4>
+                <ul>
+                    <li><strong>Build system modernized</strong> - Per-file ESM compilation with esbuild. UI bundle compiled as IIFE format matching production zip requirements.</li>
+                    <li><strong>i18n isolation fixed</strong> - Plugins now share the host app's i18n instance via <code>window.__AGENTLABS_REACT_I18NEXT__</code> instead of creating disconnected copies.</li>
+                    <li><strong>Removed broken shims</strong> - Removed non-functional shims for <code>@hookform/resolvers</code>, <code>react-hook-form</code>, and <code>zod</code>; these libraries now bundle naturally from node_modules.</li>
+                </ul>
+                <h4>Security</h4>
+                <ul>
+                    <li><strong>Port range validation</strong> - SIP trunk port must be between 1-65535.</li>
+                    <li><strong>Required host enforcement</strong> - Providers without default hosts (Twilio, Plivo, Vonage, etc.) require user-specified hostname.</li>
+                    <li><strong>Plugin installer path traversal protection</strong> - ZIP extraction validates against directory traversal attacks.</li>
+                </ul>
+                
+                <h3>v2.1.0 - December 2024</h3>
+                <h4>Added</h4>
+                <ul>
+                    <li>Conditional UI: SIP Engine tab only appears when plugin is installed AND user's plan allows access</li>
+                    <li>Dynamic loading with adapter pattern</li>
+                    <li>Dedicated build script for independent builds</li>
+                    <li>Plan-based access control for SIP features</li>
+                </ul>
+                
+                <h3>v2.0.0 - December 2024</h3>
+                <h4>Added</h4>
+                <ul>
+                    <li><strong>OpenAI SIP Engine</strong> - Incoming-only calls via OpenAI Realtime API</li>
+                    <li><strong>13 SIP Providers</strong> - Pre-configured support for Twilio, Vonage, Plivo, Telnyx, Bandwidth, SignalWire, and more</li>
+                    <li>Phone number import with bulk CSV support</li>
+                    <li>SIP URI generation for inbound routing</li>
+                    <li>Custom caller ID and failover routing for outbound</li>
+                </ul>
+                
+                <h3>v1.0.0 - November 2024</h3>
+                <h4>Initial Release</h4>
+                <ul>
+                    <li>ElevenLabs SIP engine integration</li>
+                    <li>SIP trunk management and credential storage</li>
+                    <li>Phone number import and agent assignment</li>
+                    <li>Admin configuration panel</li>
+                </ul>
+            </section>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p><strong>SIP Engine Plugin v2.0.0</strong></p>
+            <p>Part of the {{app_name}} Plugin Ecosystem</p>
+            <p style="margin-top: 24px;">&copy; 2026 {{app_name}}. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

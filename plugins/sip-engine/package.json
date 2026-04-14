@@ -1,0 +1,53 @@
+{
+  "name": "@agentlabs/sip-engine-plugin",
+  "version": "2.0.0",
+  "description": "SIP telephony integration supporting ElevenLabs SIP (multi-provider) and OpenAI SIP (incoming calls). Enables customers to use their own SIP trunks for AI-powered voice calls.",
+  "main": "index.js",
+  "type": "module",
+  "types": "index.ts",
+  "author": "AgentLabs",
+  "license": "Commercial",
+  "homepage": "https://agentlabs.io/plugins/sip-engine",
+  "keywords": [
+    "sip",
+    "voip",
+    "telephony",
+    "elevenlabs",
+    "openai",
+    "voice-ai",
+    "conversational-ai",
+    "twilio",
+    "plivo",
+    "telnyx"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "express": "^4.18.0",
+    "ws": "^8.0.0",
+    "drizzle-orm": "^0.29.0"
+  },
+  "peerDependenciesMeta": {
+    "express": {
+      "optional": false
+    },
+    "ws": {
+      "optional": false
+    },
+    "drizzle-orm": {
+      "optional": false
+    }
+  },
+  "scripts": {
+    "build": "esbuild frontend/index.tsx --bundle --outfile=dist/bundle.js --format=iife --global-name=__plugin_sip_engine__ --alias:react=./shims/react-shim.js --alias:react-dom=./shims/react-dom-shim.js --alias:react/jsx-runtime=./shims/react-jsx-runtime-shim.js --alias:react-i18next=./shims/react-i18next-shim.js --alias:@tanstack/react-query=./shims/tanstack-shim.js --banner:js=\"/* Plugin: sip-engine v2.0.0 */\" --minify",
+    "build:server": "node transpile.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agentlabs/sip-engine-plugin"
+  },
+  "bugs": {
+    "url": "https://github.com/agentlabs/sip-engine-plugin/issues"
+  }
+}

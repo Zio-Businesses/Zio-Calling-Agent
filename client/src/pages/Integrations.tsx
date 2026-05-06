@@ -95,6 +95,10 @@ export default function Integrations() {
     url: '',
     campaignId: '',
   });
+  const [elevenLabsData, setElevenLabsData] = useState({
+    apiKey: '',
+    webhookSecret: '',
+  });
 
   const { data: user, isLoading: userLoading, isError: userError } = useQuery<User>({
     queryKey: ['/api/auth/me'],
@@ -118,6 +122,16 @@ export default function Integrations() {
   const { data: deliveryLogs = [] } = useQuery<WebhookDelivery[]>({
     queryKey: ['/api/webhooks', selectedWebhookId, 'deliveries'],
     enabled: !!selectedWebhookId && isDeliveryLogsOpen,
+  });
+
+  const { data: elevenLabsConfig, isLoading: elevenLabsLoading } = useQuery<{
+    configured: boolean;
+    apiKey?: string;
+    webhookSecret?: string;
+    healthStatus?: string;
+    lastHealthCheck?: string;
+  }>({
+    queryKey: ['/api/elevenlabs/config'],
   });
 
   const createWebhookMutation = useMutation({
@@ -178,6 +192,66 @@ export default function Integrations() {
       toast({
         title: t('integrations.toast.deleteFailed'),
         description: error.message || t('integrations.toast.deleteFailedDesc'),
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const testElevenLabsMutation = useMutation({
+    mutationFn: async (apiKey: string) => {
+      return await apiRequest('POST', '/api/elevenlabs/config/test', { apiKey });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Connection successful!",
+        description: "Your ElevenLabs API key is valid.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Connection failed",
+        description: error.message || "Invalid API key.",
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const saveElevenLabsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('POST', '/api/elevenlabs/config', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/elevenlabs/config'] });
+      toast({
+        title: "Configuration saved!",
+        description: "Your private ElevenLabs key is now active.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to save",
+        description: error.message || "Failed to update configuration.",
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const removeElevenLabsMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('DELETE', '/api/elevenlabs/config', {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/elevenlabs/config'] });
+      setElevenLabsData({ apiKey: '', webhookSecret: '' });
+      toast({
+        title: "Configuration removed",
+        description: "System pool will be used for your agents.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to remove",
+        description: error.message || "Failed to remove configuration.",
         variant: 'destructive',
       });
     },
@@ -347,6 +421,125 @@ export default function Integrations() {
         </Dialog>
         )}
       </div>
+
+      {/* ElevenLabs Integration Card */}
+      <Card className="mb-8 overflow-hidden border-primary/20 shadow-lg">
+        <CardHeader className="bg-primary/5 border-b border-primary/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Zap className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <CardTitle>ElevenLabs BYOK Integration</CardTitle>
+                <CardDescription>
+                  Bring your own API key to use your own ElevenLabs account and limits.
+                </CardDescription>
+              </div>
+            </div>
+            {elevenLabsConfig?.configured && (
+              <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Active
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="elevenlabs-apiKey">ElevenLabs API Key</Label>
+                <div className="relative">
+                  <Input
+                    id="elevenlabs-apiKey"
+                    type="password"
+                    placeholder={elevenLabsConfig?.configured ? "••••••••••••••••" : "Enter your API Key"}
+                    value={elevenLabsData.apiKey}
+                    onChange={(e) => setElevenLabsData({ ...elevenLabsData, apiKey: e.target.value })}
+                  />
+                  <Lock className="absolute right-3 top-2.5 w-4 h-4 text-muted-foreground/50" />
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Found in your ElevenLabs Profile Settings under "API Keys".
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="elevenlabs-webhook">Webhook Secret (Optional)</Label>
+                <Input
+                  id="elevenlabs-webhook"
+                  placeholder="Enter your Webhook Secret"
+                  value={elevenLabsData.webhookSecret}
+                  onChange={(e) => setElevenLabsData({ ...elevenLabsData, webhookSecret: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-dashed">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                Connection Status
+              </h4>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Status:</span>
+                  <span className={elevenLabsConfig?.configured ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>
+                    {elevenLabsConfig?.configured ? "Using Private Key" : "Using System Pool"}
+                  </span>
+                </div>
+                {elevenLabsConfig?.configured && (
+                  <>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Health:</span>
+                      <Badge variant="outline" className="text-[10px] uppercase">
+                        {elevenLabsConfig.healthStatus || "Healthy"}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Last Check:</span>
+                      <span className="text-xs">
+                        {elevenLabsConfig.lastHealthCheck ? new Date(elevenLabsConfig.lastHealthCheck).toLocaleString() : "Never"}
+                      </span>
+                    </div>
+                  </>
+                )}
+                {!elevenLabsConfig?.configured && (
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    By default, your agents use our shared pool of API keys. Adding your own key gives you direct control over your limits and allows you to use your own ElevenLabs voices.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 mt-8 pt-6 border-t">
+            <Button
+              onClick={() => saveElevenLabsMutation.mutate(elevenLabsData)}
+              disabled={!elevenLabsData.apiKey || saveElevenLabsMutation.isPending}
+              className="min-w-[140px]"
+            >
+              {saveElevenLabsMutation.isPending ? "Saving..." : "Save Configuration"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => testElevenLabsMutation.mutate(elevenLabsData.apiKey)}
+              disabled={!elevenLabsData.apiKey || testElevenLabsMutation.isPending}
+            >
+              {testElevenLabsMutation.isPending ? "Testing..." : "Test Connection"}
+            </Button>
+            {elevenLabsConfig?.configured && (
+              <Button
+                variant="ghost"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 ml-auto"
+                onClick={() => removeElevenLabsMutation.mutate()}
+                disabled={removeElevenLabsMutation.isPending}
+              >
+                {removeElevenLabsMutation.isPending ? "Removing..." : "Remove Private Key"}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {isWebhookLocked ? (
         <Card className="p-8 text-center">

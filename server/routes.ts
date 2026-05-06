@@ -62,6 +62,7 @@ import { createCampaignRoutes } from "./routes/campaign-routes";
 import { createPhoneRoutes } from "./routes/phone-routes";
 import { createUserAddressRoutes } from "./routes/user-address-routes";
 import { createAnalyticsRoutes } from "./routes/analytics-routes";
+import { createElevenLabsConfigRoutes } from "./routes/elevenlabs-config-routes";
 import { createRouteContext } from "./routes/common";
 // Payment Engine v1.0.0 - All payment gateway routers
 import {
@@ -204,6 +205,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register analytics routes (dashboard, analytics, calls)
   const analyticsRoutes = createAnalyticsRoutes(routeContext);
   app.use(analyticsRoutes);
+
+  // Register ElevenLabs configuration routes (BYOK)
+  const elevenLabsConfigRoutes = createElevenLabsConfigRoutes(routeContext);
+  app.use(elevenLabsConfigRoutes);
 
   // Register notification routes
   const notificationRoutes = createNotificationRoutes(routeContext);

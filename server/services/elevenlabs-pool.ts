@@ -166,6 +166,8 @@ export class ElevenLabsPoolService {
       name: row.name,
       apiKey: row.api_key,
       webhookSecret: row.webhook_secret || null,
+      userId: row.user_id || null,
+      isShared: row.is_shared !== undefined ? row.is_shared : true,
       maxConcurrency: row.max_concurrency,
       currentLoad: row.current_load,
       totalAssignedAgents: row.total_assigned_agents,
@@ -289,6 +291,9 @@ export class ElevenLabsPoolService {
           id: row.id,
           name: row.name,
           apiKey: row.api_key,
+          webhookSecret: row.webhook_secret || null,
+          userId: row.user_id || null,
+          isShared: row.is_shared !== undefined ? row.is_shared : true,
           maxConcurrency: row.max_concurrency,
           currentLoad: row.current_load,
           totalAssignedAgents: row.total_assigned_agents,
@@ -337,6 +342,9 @@ export class ElevenLabsPoolService {
           id: row.id,
           name: row.name,
           apiKey: row.api_key,
+          webhookSecret: row.webhook_secret || null,
+          userId: row.user_id || null,
+          isShared: row.is_shared !== undefined ? row.is_shared : true,
           maxConcurrency: row.max_concurrency,
           currentLoad: row.current_load,
           totalAssignedAgents: row.total_assigned_agents,
@@ -899,7 +907,25 @@ export class ElevenLabsPoolService {
       }
     }
 
-    // Step 3: Assign new credential using threshold-based selection
+    // Step 3: Check if user has a private credential that isn't assigned yet
+    const [privateCredential] = await db
+      .select()
+      .from(elevenLabsCredentials)
+      .where(
+        and(
+          eq(elevenLabsCredentials.userId, userId),
+          eq(elevenLabsCredentials.isActive, true)
+        )
+      )
+      .limit(1);
+
+    if (privateCredential) {
+      await this.assignUserToCredential(userId, privateCredential.id);
+      console.log(`🔑 [User Affinity] User ${userId} using their private credential: ${privateCredential.name}`);
+      return privateCredential;
+    }
+
+    // Step 4: Assign new credential using threshold-based selection
     const credential = await this.selectCredentialForNewUser();
     if (!credential) {
       console.error(`❌ [User Affinity] No active credentials available for user ${userId}`);
@@ -924,7 +950,12 @@ export class ElevenLabsPoolService {
     const credentials = await db
       .select()
       .from(elevenLabsCredentials)
-      .where(eq(elevenLabsCredentials.isActive, true));
+      .where(
+        and(
+          eq(elevenLabsCredentials.isActive, true),
+          eq(elevenLabsCredentials.isShared, true)
+        )
+      );
 
     if (credentials.length === 0) {
       return null;

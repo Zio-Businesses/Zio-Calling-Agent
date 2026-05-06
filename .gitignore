@@ -6,6 +6,7 @@ yarn-error.log*
 .pnpm-debug.log*
 .npm
 .eslintcache
+package-lock.json
 
 # Build outputs
 dist/
@@ -51,6 +52,7 @@ Desktop.ini
 .docker
 docker-compose.yml
 *.docker-compose.override.yml
+Dockerfile
 
 # Temporary files
 tmp/

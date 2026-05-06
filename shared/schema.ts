@@ -95,10 +95,12 @@ export const refreshTokens = pgTable("refresh_tokens", {
 // ElevenLabs API Key Pool
 export const elevenLabsCredentials = pgTable("eleven_labs_credentials", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"), // Nullable: system keys have no userId, user-specific keys have one
   name: text("name").notNull(), // Friendly name for the key (e.g., "Primary Account", "Backup Key 1")
   apiKey: text("api_key").notNull(),
   webhookSecret: text("webhook_secret"), // HMAC secret for verifying webhooks from this ElevenLabs workspace (nullable for migration)
   isActive: boolean("is_active").notNull().default(true),
+  isShared: boolean("is_shared").notNull().default(true), // System keys are shared by default
   maxConcurrency: integer("max_concurrency").notNull().default(30), // ElevenLabs default limit
   currentLoad: integer("current_load").notNull().default(0), // Current active calls using this key
   totalAssignedAgents: integer("total_assigned_agents").notNull().default(0), // How many agents use this key

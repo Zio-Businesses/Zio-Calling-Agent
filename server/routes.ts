@@ -33,11 +33,11 @@ const elevenLabsPoolService = new ElevenLabsPoolService();
 import { getTwilioClient } from "./services/twilio-connector";
 import { campaignExecutor } from "./services/campaign-executor";
 import { BatchCallingService } from "./services/batch-calling";
-import { 
+import {
   handleTwilioVoiceWebhook,
   handleIncomingCallWebhook,
-  handleTwilioStatusWebhook, 
-  handleTwilioRecordingWebhook, 
+  handleTwilioStatusWebhook,
+  handleTwilioRecordingWebhook,
   handleTwilioStreamWebSocket,
   handleFlowVoiceAnswer,
   handleFlowNode,
@@ -134,7 +134,7 @@ const ALLOWED_MIME_TYPES = new Set([
   'text/plain', 'application/json',
 ]);
 
-const upload = multer({ 
+const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 20 * 1024 * 1024,
@@ -152,7 +152,7 @@ const upload = multer({
 function escapeCSV(value: string | number): string {
   if (typeof value === 'number') return value.toString();
   if (!value) return "";
-  
+
   // Escape quotes by doubling them and wrap in quotes if contains comma, quote, or newline
   const stringValue = value.toString();
   if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
@@ -167,11 +167,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create shared route context for dependency injection
   const routeContext = createRouteContext();
-  
+
   // Register public routes (installer, health, branding, SEO, contact, etc.)
   const publicRoutes = createPublicRoutes(routeContext);
   app.use(publicRoutes);
-  
+
   // Register authentication routes (login, register, OTP, password, etc.)
   const authRoutes = createAuthRoutes(routeContext);
   app.use(authRoutes);
@@ -239,21 +239,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/plivo/incoming-connections', authenticateToken as unknown as import('express').RequestHandler);
   const plivoApiRoutes = createPlivoApiRoutes();
   app.use(plivoApiRoutes);
-  
+
   // Setup Plivo webhooks for voice calls
   const plivoBaseUrl = getDomain();
   setupPlivoWebhooks(app, plivoBaseUrl);
   // Plivo WebSocket stream is set up on httpServer below (after other upgrade handlers)
-  
+
   // Start the stuck calls cleanup scheduler for Plivo engine
   import("./engines/plivo/services/plivo-call.service").then(({ PlivoCallService }) => {
     PlivoCallService.startStuckCallsScheduler();
   }).catch((error) => {
     console.error('❌ Failed to start Plivo stuck calls scheduler:', error.message);
   });
-  
+
   console.log('✅ Plivo + OpenAI Realtime Engine initialized');
-  
+
   // Initialize Plivo-ElevenLabs SIP Trunk Engine (ISOLATED from Twilio+ElevenLabs)
   // This provides Plivo SIP trunk to ElevenLabs connection for Indian phone numbers
   initPlivoElevenLabsEngine(app);
@@ -311,11 +311,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const plivoMod = await import("./engines/plivo/services/plivo-call.service");
       PlivoCallServiceRef = plivoMod.PlivoCallService;
-    } catch {}
+    } catch { }
     try {
       const twilioMod = await import("./engines/twilio-openai/services/twilio-openai-call.service");
       TwilioOpenAICallServiceRef = twilioMod.TwilioOpenAICallService;
-    } catch {}
+    } catch { }
 
     await restApiPlugin.registerRestApiRoutes(app, {
       sessionAuthMiddleware: authenticateToken as unknown as import('express').RequestHandler,
@@ -369,25 +369,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { llmModels } = await import("@shared/schema");
       const { eq, and } = await import("drizzle-orm");
-      
+
       // Get user to check their plan tier
       const user = await storage.getUser(req.userId!);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-      
+
       // Fetch all active models
       const allModels = await db
         .select()
         .from(llmModels)
         .where(eq(llmModels.isActive, true))
         .orderBy(llmModels.sortOrder, llmModels.name);
-      
+
       // Admins and Pro users can see all models
       if (user.role === 'admin' || user.planType === 'pro') {
         return res.json(allModels);
       }
-      
+
       // Free users can only see free tier models
       const freeModels = allModels.filter(model => model.tier === 'free');
       res.json(freeModels);
@@ -438,10 +438,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const limits = await storage.getUserEffectiveLimits(req.params.id);
-      
+
       // Get subscription overrides if any
       const subscription = await storage.getUserSubscription(req.params.id);
-      
+
       // Get current usage counts
       const webhookCount = await storage.getUserWebhookCount(req.params.id);
       const kbCount = await db
@@ -503,7 +503,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         return numValue;
       };
-      
+
       const overrideMaxWebhooks = coerceAndValidate(body.overrideMaxWebhooks, 'overrideMaxWebhooks');
       const overrideMaxKnowledgeBases = coerceAndValidate(body.overrideMaxKnowledgeBases, 'overrideMaxKnowledgeBases');
       const overrideMaxFlows = coerceAndValidate(body.overrideMaxFlows, 'overrideMaxFlows');
@@ -511,7 +511,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get or create subscription
       let subscription = await storage.getUserSubscription(req.params.id);
-      
+
       if (!subscription) {
         // Create a free subscription with overrides
         subscription = await storage.createUserSubscription({
@@ -555,7 +555,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const subscription = await storage.getUserSubscription(req.params.id);
-      
+
       if (subscription) {
         // Reset all overrides to null (inherit from plan)
         await db.update(userSubscriptions)
@@ -584,7 +584,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if pagination is requested
       const requestsPagination = req.query.page !== undefined || req.query.pageSize !== undefined;
-      
+
       if (requestsPagination) {
         const page = parseInt(req.query.page as string, 10) || 1;
         const pageSize = parseInt(req.query.pageSize as string, 10) || 25;
@@ -669,18 +669,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/elevenlabs/agents", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
-      const { 
-        type = 'natural', 
-        name, 
-        voiceTone, 
-        personality, 
-        systemPrompt, 
-        elevenLabsVoiceId, 
-        language, 
-        model, 
-        firstMessage, 
-        temperature, 
-        transferRules, 
+      const {
+        type = 'natural',
+        name,
+        voiceTone,
+        personality,
+        systemPrompt,
+        elevenLabsVoiceId,
+        language,
+        model,
+        firstMessage,
+        temperature,
+        transferRules,
         knowledgeBaseIds,
         flowId,
         maxDurationSeconds,
@@ -722,7 +722,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingAgents = await storage.getUserAgents(req.userId!);
       // Skip limit check if explicitly unlimited (-1 or 999)
       if (plan.maxAgents !== -1 && plan.maxAgents !== 999 && existingAgents.length >= plan.maxAgents) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: `Agent limit reached. Your ${plan.displayName} plan allows maximum ${plan.maxAgents} agent(s). Please upgrade to create more agents.`,
           upgradeRequired: true
         });
@@ -764,7 +764,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               title: item!.title,
               elevenLabsDocId: item!.elevenLabsDocId!
             }));
-          
+
           console.log(`📚 Filtered ${knowledgeBases.length} valid knowledge base items from ${knowledgeBaseIds.length} selected`);
         }
 
@@ -796,13 +796,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Flow Agent: Compile flow and create ElevenLabs agent with workflow
         console.log(`🔄 Creating Flow Agent with flowId: ${flowId}`);
-        
+
         // Fetch the flow from database
         const [flow] = await db
           .select()
           .from(flows)
           .where(and(eq(flows.id, flowId), eq(flows.userId, req.userId!)));
-        
+
         if (!flow) {
           return res.status(404).json({ error: "Flow not found or access denied" });
         }
@@ -817,7 +817,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const compileResult = compiler.compile();
         const compiledWorkflow = compileResult.workflow;
         const flowFirstMessage = compileResult.firstMessage;
-        
+
         // Validate the compiled workflow
         const validation = compiler.validate();
         if (!validation.valid) {
@@ -828,7 +828,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (flowFirstMessage) {
           console.log(`📝 First message from flow: "${flowFirstMessage.substring(0, 50)}..."`);
         }
-        
+
         // For Flow agents: Flow's extracted first message takes PRIORITY over request's firstMessage
         // This ensures the agent says the scripted message from the flow, not a form default
         const effectiveFirstMessage = flowFirstMessage || firstMessage;
@@ -848,11 +848,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const flowKnowledgeBases: Array<{ type: string; name: string; id: string }> = [];
         if (knowledgeBaseIds && Array.isArray(knowledgeBaseIds) && knowledgeBaseIds.length > 0) {
           console.log(`📚 [Flow] Preparing ${knowledgeBaseIds.length} knowledge base(s)`);
-          
+
           for (const kbId of knowledgeBaseIds) {
             try {
               const kbItem = await storage.getKnowledgeBaseItem(kbId);
-              
+
               if (!kbItem) {
                 console.warn(`⚠️  Knowledge base item ${kbId} not found, skipping`);
                 continue;
@@ -894,10 +894,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         elevenLabsAgentId = elevenLabsAgent.agent_id;
         agentLink = `https://elevenlabs.io/app/conversational-ai/call/${elevenLabsAgent.agent_id}`;
-        
+
         console.log(`✅ Flow Agent created in ElevenLabs: ${elevenLabsAgentId}`);
       }
-      
+
       // Store in database - save all fields for both agent types
       const agent = await storage.createAgent({
         type: type as 'natural' | 'flow',
@@ -925,7 +925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         voiceSpeed: voiceSpeed ?? (type === 'flow' ? 1.0 : null),
         // System Tools - enabled for flow agents
         detectLanguageEnabled: type === 'flow' ? (detectLanguageEnabled || false) : false,
-        config: { 
+        config: {
           elevenLabsVoiceId,
           model: model || "gpt-4o-mini",
           firstMessage,
@@ -949,18 +949,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Agent not found" });
       }
 
-      const { 
+      const {
         type,
-        name, 
-        voiceTone, 
-        personality, 
-        systemPrompt, 
-        elevenLabsVoiceId, 
-        language, 
-        model, 
-        firstMessage, 
-        temperature, 
-        transferRules, 
+        name,
+        voiceTone,
+        personality,
+        systemPrompt,
+        elevenLabsVoiceId,
+        language,
+        model,
+        firstMessage,
+        temperature,
+        transferRules,
         knowledgeBaseIds,
         flowId,
         maxDurationSeconds,
@@ -988,7 +988,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           elevenLabsKbIds = kbItems
             .filter(item => item && item.userId === req.userId && item.elevenLabsDocId)
             .map(item => item!.elevenLabsDocId!);
-          
+
           console.log(`📚 Filtered ${elevenLabsKbIds.length} valid knowledge base items from ${knowledgeBaseIds.length} selected`);
         } else {
           elevenLabsKbIds = [];
@@ -1037,14 +1037,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Natural Agent: Sync properties
         const effectiveLanguage4 = language || agent.language;
         const isNonEnglish4 = effectiveLanguage4 && effectiveLanguage4 !== 'en';
-        
+
         // Smart TTS model selection for non-English agents
         let adminTtsModel4: string | undefined;
         if (isNonEnglish4) {
           const ttsModelSetting4 = await storage.getGlobalSetting('default_tts_model');
           adminTtsModel4 = (ttsModelSetting4?.value as string) || 'eleven_multilingual_v2';
         }
-        
+
         // Build update payload - no double spreading
         const updatePayload: any = {
           ...(name && { name }),
@@ -1058,7 +1058,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...(tools && { tools }),
           ...(elevenLabsKbIds !== undefined && { knowledge_base_ids: elevenLabsKbIds }),
         };
-        
+
         // For non-English agents: ALWAYS include language and TTS model
         // For English agents changing language: include the new language
         if (isNonEnglish4) {
@@ -1079,20 +1079,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`🔄 Retry attempt ${attempt + 1}/${maxRetries} for ElevenLabs sync...`);
               await new Promise(resolve => setTimeout(resolve, delays[attempt]));
             }
-            
+
             await elevenLabsService.updateAgent(agent.elevenLabsAgentId!, updatePayload);
             console.log("✅ ElevenLabs agent synced successfully");
             break; // Success - exit retry loop
           } catch (error: any) {
             lastError = error;
             console.warn(`⚠️ Attempt ${attempt + 1}/${maxRetries} failed:`, error.message);
-            
+
             // If this was the last attempt, return with warning
             if (attempt === maxRetries - 1) {
               console.error("❌ All retry attempts failed. Changes saved locally only.");
-              return res.json({ 
-                success: true, 
-                warning: "Agent updated locally. ElevenLabs sync failed after 3 attempts. Please try editing again later." 
+              return res.json({
+                success: true,
+                warning: "Agent updated locally. ElevenLabs sync failed after 3 attempts. Please try editing again later."
               });
             }
           }
@@ -1100,10 +1100,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (agentType === 'flow' && agent.elevenLabsAgentId && (flowId !== undefined || maxDurationSeconds !== undefined || detectLanguageEnabled !== undefined || elevenLabsVoiceId || name || language || model || temperature !== undefined)) {
         // Flow Agent: Sync workflow when flowId, maxDuration, language detection, voice, or other settings change
         console.log(`🔄 Syncing Flow Agent: ${agent.elevenLabsAgentId}`);
-        
+
         // Get the flow to compile (use new flowId if provided, otherwise use existing)
         const flowToUse = flowId || agent.flowId;
-        
+
         if (flowToUse) {
           try {
             // Fetch the flow from database
@@ -1111,7 +1111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               .select()
               .from(flows)
               .where(and(eq(flows.id, flowToUse), eq(flows.userId, req.userId!)));
-            
+
             if (flow) {
               // Compile the flow to ElevenLabs workflow format
               const compiler = new ElevenLabsFlowCompiler(
@@ -1121,26 +1121,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const compileResult = compiler.compile();
               const compiledWorkflow = compileResult.workflow;
               const flowFirstMessage = compileResult.firstMessage;
-              
+
               console.log(`📋 Recompiled flow: ${flow.name} with ${Object.keys(compiledWorkflow.nodes).length} nodes`);
               if (flowFirstMessage) {
                 console.log(`📝 First message from flow: "${flowFirstMessage.substring(0, 50)}..."`);
               }
-              
+
               // For Flow agents, prioritize the flow's extracted first message over agent's stored value
               const effectiveFirstMessage5 = flowFirstMessage || firstMessage;
-              
+
               // Determine effective language and TTS model for non-English agents
               const effectiveLanguage5 = language || agent.language;
               const isNonEnglish5 = effectiveLanguage5 && effectiveLanguage5 !== 'en';
-              
+
               // Smart TTS model selection for non-English agents
               let adminTtsModel5: string | undefined;
               if (isNonEnglish5) {
                 const ttsModelSetting5 = await storage.getGlobalSetting('default_tts_model');
                 adminTtsModel5 = (ttsModelSetting5?.value as string) || 'eleven_multilingual_v2';
               }
-              
+
               // Resolve LLM model if provided
               let effectiveLlmModel5: string | undefined;
               if (model) {
@@ -1150,7 +1150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   .from(llmModels)
                   .where(eq(llmModels.name, model))
                   .limit(1);
-                
+
                 effectiveLlmModel5 = modelRecord.length > 0 ? modelRecord[0].modelId : model;
                 console.log(`📝 Flow agent ElevenLabs sync - LLM model: ${effectiveLlmModel5}`);
               }
@@ -1168,16 +1168,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 effectiveFirstMessage5,  // Pass first message extracted from flow
                 elevenLabsVoiceId  // Pass voice ID if provided
               );
-              
+
               console.log("✅ Flow Agent workflow synced successfully");
             } else {
               console.warn(`⚠️ Flow not found for sync: ${flowToUse}`);
             }
           } catch (error: any) {
             console.error("❌ Flow Agent sync failed:", error.message);
-            return res.json({ 
-              success: true, 
-              warning: "Agent updated locally. ElevenLabs workflow sync failed. Please try editing again later." 
+            return res.json({
+              success: true,
+              warning: "Agent updated locally. ElevenLabs workflow sync failed. Please try editing again later."
             });
           }
         }
@@ -1236,8 +1236,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Reject Flow agents - they should use transfer nodes in the flow builder instead
       if (agent.type === 'flow') {
-        return res.status(400).json({ 
-          error: "Flow agents cannot use this endpoint. Use the Transfer node in your flow instead." 
+        return res.status(400).json({
+          error: "Flow agents cannot use this endpoint. Use the Transfer node in your flow instead."
         });
       }
 
@@ -1255,7 +1255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sipTrunkAddress = await getSipTrunkOutboundAddress(req.params.id);
           console.log(`   📞 [Transfer Config] SIP agent detected - using sip_refer transfer type (trunk: ${sipTrunkAddress})`);
         }
-      } catch {}
+      } catch { }
 
       let numberType: "phone" | "sip_uri" = "phone";
       let destination = transferNumber;
@@ -1295,8 +1295,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       await storage.updateAgent(req.params.id, { config: updatedConfig });
-      
-      res.json({ 
+
+      res.json({
         success: true,
         message: `Call transfer configured successfully. The AI will now transfer calls to ${transferNumber} when appropriate.`
       });
@@ -1310,18 +1310,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Uses pool credentials (user affinity) to fetch voices, not global env var
   app.get("/api/elevenlabs/voices", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
+      console.log(`🎤 [Voices] Fetching voices for user ${req.userId}...`);
+
       // Get credential from pool - use user affinity for consistency
       const credential = await ElevenLabsPoolService.getUserCredential(req.userId!);
-      
+
       if (!credential) {
         // No pool credentials available - return empty array with helpful message
-        console.warn("⚠️ [Voices] No ElevenLabs credentials in pool - voices cannot be fetched");
+        console.warn(`⚠️ [Voices] No ElevenLabs credentials in pool for user ${req.userId} - voices cannot be fetched`);
         return res.json([]);
       }
-      
+
+      console.log(`🔑 [Voices] User ${req.userId} using credential ${credential.id} (${credential.name}), isShared=${credential.isShared}`);
+
       // Create service instance with pool credential
       const poolService = new ElevenLabsService(credential.apiKey);
       const { voices } = await poolService.listVoices();
+
+      console.log(`✅ [Voices] Successfully fetched ${voices.length} voices for user ${req.userId}`);
       res.json(voices);
     } catch (error: any) {
       console.error("Get ElevenLabs voices error:", error);
@@ -1335,7 +1341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Get credential from pool for this user
       const credential = await ElevenLabsPoolService.getUserCredential(req.userId!);
-      
+
       if (!credential) {
         // No pool credentials - return defaults
         return res.json({
@@ -1346,14 +1352,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           tier: 'not_configured',
         });
       }
-      
+
       const poolService = new ElevenLabsService(credential.apiKey);
       const subscription = await poolService.getSubscription();
-      
+
       // ElevenLabs API returns voice_slots_used and voice_limit (not voice_count/max_voice_count)
       const used = subscription.voice_slots_used ?? 0;
       const limit = subscription.voice_limit ?? 30;
-      
+
       const response = {
         used,
         limit,
@@ -1378,16 +1384,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ElevenLabs Shared Voices (Voice Library) - 5000+ community voices (LEGACY - use /api/voices/search instead)
   app.get("/api/elevenlabs/shared-voices", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
-      const { 
-        page, 
-        pageSize, 
-        search, 
-        language, 
-        gender, 
-        age, 
-        accent, 
+      const {
+        page,
+        pageSize,
+        search,
+        language,
+        gender,
+        age,
+        accent,
         category,
-        useCases 
+        useCases
       } = req.query;
 
       const result = await elevenLabsService.listSharedVoices({
@@ -1414,11 +1420,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Fetch LLM pricing from ElevenLabs
       const pricing = await elevenLabsService.getLLMPricing();
-      
+
       // Get admin margin percentage from global settings (default to 0% if not set)
       const marginSetting = await storage.getGlobalSetting('llm_pricing_margin');
       const marginPercentage = marginSetting ? parseFloat(String(marginSetting.value)) : 0;
-      
+
       // Apply margin to all prices
       const pricingWithMargin = {
         ...pricing,
@@ -1427,7 +1433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Apply margin percentage (e.g., 10% margin = multiply by 1.10)
           cost_per_million_input_tokens: llm.cost_per_million_input_tokens * (1 + marginPercentage / 100),
           cost_per_million_output_tokens: llm.cost_per_million_output_tokens * (1 + marginPercentage / 100),
-          cost_per_million_input_cache_read_tokens: llm.cost_per_million_input_cache_read_tokens 
+          cost_per_million_input_cache_read_tokens: llm.cost_per_million_input_cache_read_tokens
             ? llm.cost_per_million_input_cache_read_tokens * (1 + marginPercentage / 100)
             : undefined,
           cost_per_million_input_cache_write_tokens: llm.cost_per_million_input_cache_write_tokens
@@ -1439,7 +1445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           original_cost_per_million_output_tokens: llm.cost_per_million_output_tokens,
         })),
       };
-      
+
       res.json(pricingWithMargin);
     } catch (error: any) {
       console.error("Get LLM pricing error:", error);
@@ -1454,14 +1460,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/webhooks/twilio/incoming", validateTwilioWebhook, handleIncomingCallWebhook); // Incoming calls to purchased numbers
   app.post("/api/webhooks/twilio/status", validateTwilioWebhook, handleTwilioStatusWebhook);
   app.post("/api/webhooks/twilio/recording", validateTwilioWebhook, handleTwilioRecordingWebhook);
-  
+
   // Flow-based execution webhooks (validated with Twilio signature verification)
   app.post("/api/webhooks/twilio/flow/answer", validateTwilioWebhook, handleFlowVoiceAnswer);
   app.post("/api/webhooks/twilio/flow/node", validateTwilioWebhook, handleFlowNode);
   app.post("/api/webhooks/twilio/flow/gather", validateTwilioWebhook, handleFlowGather);
   app.post("/api/webhooks/twilio/flow/continue", validateTwilioWebhook, handleFlowContinue);
   app.post("/api/webhooks/twilio/flow/status", validateTwilioWebhook, handleFlowStatus);
-  
+
   // ElevenLabs webhook endpoints (no authentication - called by ElevenLabs)
   app.post("/api/webhooks/elevenlabs", handleElevenLabsWebhook); // Call completion notifications
   // RAG knowledge base tool - supports both URL-based token (primary) and header token (fallback)
@@ -1492,7 +1498,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin routes accessible by admin team members (read-only analytics)
   // Must be before main admin router to take precedence
   app.use("/api/admin", adminTeamAccessRoutes);
-  
+
   // Admin routes (super admin only)
   app.use("/api/admin", adminRouter);
 
@@ -1504,7 +1510,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Payment Transactions admin routes
   app.use("/api/admin/transactions", transactionsRouter);
-  
+
   // User-accessible transaction routes (non-admin)
   app.use("/api/transactions", transactionsRouter);
 
@@ -1516,7 +1522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const userId = req.userId!;
-      
+
       const refund = await storage.getRefund(id);
       if (!refund) {
         return res.status(404).json({ message: "Refund not found" });
@@ -1544,7 +1550,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const latestRefund = await storage.getRefund(id);
-      const fileName = latestRefund?.refundNoteNumber 
+      const fileName = latestRefund?.refundNoteNumber
         ? `${latestRefund.refundNoteNumber.replace(/\//g, '-')}.pdf`
         : `refund-note-${id}.pdf`;
 
@@ -1639,80 +1645,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // This must be registered on the httpServer to properly handle Twilio WebSocket streams
   httpServer.on('upgrade', (request, socket, head) => {
     const pathname = request.url?.split('?')[0] || '';
-    
+
     console.log(`🔌 [Upgrade] Request for: ${request.url}`);
     console.log(`   Pathname: ${pathname}`);
-    
+
     // Only handle Twilio stream WebSocket upgrades
     if (pathname === '/api/webhooks/twilio/stream') {
       console.log(`✅ [Upgrade] Handling Twilio stream WebSocket`);
-      
+
       const wss = new WebSocketServer({ noServer: true });
-      
+
       wss.handleUpgrade(request, socket, head, async (ws: any) => {
         console.log(`✅ [WebSocket] Upgrade successful for Twilio stream`);
         console.log(`   Waiting for Twilio 'start' event to determine routing...`);
-        
+
         let handlerRouted = false;
         let startTimeout: NodeJS.Timeout | null = null;
         const bufferedMessages: Buffer[] = [];
-        
+
         // Temporary message handler to wait for 'start' event
         const tempMessageHandler = async (message: Buffer) => {
           try {
             const data = JSON.parse(message.toString());
-            
+
             // Buffer all messages as raw Buffers (not parsed objects)
             bufferedMessages.push(message);
-            
+
             // Ignore 'connected' and other non-start events
             if (data.event !== 'start') {
               console.log(`📨 [WebSocket] Received '${data.event}' event, buffering...`);
               return;
             }
-            
+
             // Got start event - clear timeout and route to handler
             if (startTimeout) {
               clearTimeout(startTimeout);
               startTimeout = null;
             }
-            
+
             console.log(`📨 [WebSocket] Received Twilio 'start' event, routing to handler`);
-            
+
             // Extract custom parameters sent from TwiML <Parameter> tags
             const customParams = data.start?.customParameters || {};
             const callId = customParams.callId;
             const agentId = customParams.agentId;
-            
+
             console.log(`   Extracted routing params:`);
             console.log(`   - callId: ${callId}`);
             console.log(`   - agentId: ${agentId}`);
-            
+
             if (!agentId || !callId) {
               console.error(`❌ [WebSocket] Missing required routing parameters (agentId or callId)`);
               ws.close(1008, 'Missing required parameters');
               return;
             }
-            
+
             // Look up agent type to determine routing
             // Note: agentId could be either database UUID (Flow) or ElevenLabs ID (Natural)
             try {
               // Try looking up by database ID first (Flow agents)
               let agentRecords = await db.select().from(agents).where(eq(agents.id, agentId)).limit(1);
-              
+
               // If not found, try ElevenLabs ID (Natural agents)
               if (agentRecords.length === 0) {
                 agentRecords = await db.select().from(agents).where(eq(agents.elevenLabsAgentId, agentId)).limit(1);
               }
-              
+
               const agent = agentRecords[0];
-              
+
               if (!agent) {
                 console.error(`❌ [WebSocket] Agent not found for ID: ${agentId}`);
                 ws.close(1008, 'Agent not found');
                 return;
               }
-              
+
               // Security: Verify the call exists in our database
               // This prevents spoofed WebSocket connections with fake call IDs
               const [existingCall] = await db
@@ -1720,25 +1726,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 .from(calls)
                 .where(eq(calls.id, callId))
                 .limit(1);
-              
+
               if (!existingCall) {
                 console.error(`❌ [WebSocket] Security: Call not found for ID: ${callId}`);
                 ws.close(1008, 'Call not found');
                 return;
               }
-              
+
               console.log(`✅ [WebSocket] Found agent: ${agent.id} (type: ${agent.type})`);
-              
+
               // Remove temp message handler before routing
               ws.removeListener('message', tempMessageHandler);
               handlerRouted = true;
-              
+
               // Extract ALL custom parameters for handlers to use
               const flowId = customParams.flowId;
               const executionId = customParams.executionId;
               const fromPhone = customParams.fromPhone || customParams.from;
               const contactName = customParams.contactName;
-              
+
               // Create mock request with full parameter set for handlers
               const mockReq: any = {
                 url: request.url,
@@ -1752,7 +1758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   contactName
                 }
               };
-              
+
               // Route all agents to ElevenLabs handler
               // Both Natural and Flow Agents now execute through ElevenLabs
               // Flow Agents have their workflows synced to ElevenLabs
@@ -1761,7 +1767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 console.log(`   Flow context: flowId=${flowId}, executionId=${executionId}`);
               }
               handleTwilioStreamWebSocket(ws, mockReq);
-              
+
               // Delay replay slightly to allow handlers to attach listeners
               // Then replay all buffered messages as raw Buffers
               setTimeout(() => {
@@ -1772,7 +1778,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 // Clear buffer after replay to prevent double-processing
                 bufferedMessages.length = 0;
               }, 100); // 100ms delay
-              
+
             } catch (error) {
               console.error('❌ [WebSocket] Error during routing:', error);
               ws.close(1011, 'Internal server error during routing');
@@ -1782,10 +1788,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Don't close on parse errors, just log and continue
           }
         };
-        
+
         // Attach temporary message handler
         ws.on('message', tempMessageHandler);
-        
+
         // Set timeout for start event
         startTimeout = setTimeout(() => {
           if (!handlerRouted) {
@@ -1794,7 +1800,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ws.close(1008, 'Start event timeout');
           }
         }, 10000); // 10 second timeout
-        
+
         // Clean up timeout on connection close
         ws.on('close', () => {
           if (startTimeout) {
@@ -1813,12 +1819,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============================================
   // USER LIMITS API
   // ============================================
-  
+
   // Get all user limits and current usage
   app.get("/api/user/limits", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const limits = await storage.getUserEffectiveLimits(req.userId!);
-      
+
       // Get current counts
       const webhookCount = await storage.getUserWebhookCount(req.userId!);
       const kbCount = await db
@@ -1833,7 +1839,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .select({ count: sql<number>`count(*)` })
         .from(phoneNumbers)
         .where(eq(phoneNumbers.userId, req.userId!));
-      
+
       res.json({
         webhooks: {
           current: webhookCount,
@@ -1960,10 +1966,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Only admins can send broadcast notifications" });
       }
 
-      const { 
-        title, 
-        message, 
-        link, 
+      const {
+        title,
+        message,
+        link,
         type = 'system',
         icon,
         displayType = 'bell',
@@ -1971,7 +1977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dismissible = true,
         expiresAt
       } = req.body;
-      
+
       if (!title || !message) {
         return res.status(400).json({ error: "Title and message are required" });
       }
@@ -2012,10 +2018,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }))
       );
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         recipientCount: notifications.length,
-        message: `Broadcast sent to ${notifications.length} users` 
+        message: `Broadcast sent to ${notifications.length} users`
       });
     } catch (error: any) {
       console.error("Broadcast notification error:", error);
@@ -2031,32 +2037,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/prompt-templates", authenticateToken, async (req: AuthRequest, res: Response) => {
     try {
       const category = req.query.category as string | undefined;
-      
+
       // Get user's own templates
       const userTemplates = await storage.getUserPromptTemplates(req.userId!);
-      
+
       // Get system templates
       const systemTemplates = await storage.getSystemPromptTemplates();
-      
+
       // Get public templates (from other users)
       const publicTemplates = await storage.getPublicPromptTemplates();
-      
+
       // Combine and deduplicate (user's own templates take priority, avoid system template duplicates)
       const userTemplateIds = new Set(userTemplates.map(t => t.id));
       const systemTemplateIds = new Set(systemTemplates.map(t => t.id));
-      const filteredPublic = publicTemplates.filter(t => 
-        !userTemplateIds.has(t.id) && 
-        !systemTemplateIds.has(t.id) && 
+      const filteredPublic = publicTemplates.filter(t =>
+        !userTemplateIds.has(t.id) &&
+        !systemTemplateIds.has(t.id) &&
         t.userId !== req.userId
       );
-      
+
       let allTemplates = [...userTemplates, ...systemTemplates, ...filteredPublic];
-      
+
       // Filter by category if specified
       if (category && category !== 'all') {
         allTemplates = allTemplates.filter(t => t.category === category);
       }
-      
+
       res.json(allTemplates);
     } catch (error: any) {
       console.error("Get prompt templates error:", error);
@@ -2071,16 +2077,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!template) {
         return res.status(404).json({ error: "Prompt template not found" });
       }
-      
+
       // Allow access if: own template, system template, or public template
       const isOwn = template.userId === req.userId;
       const isSystem = template.isSystemTemplate;
       const isPublic = template.isPublic;
-      
+
       if (!isOwn && !isSystem && !isPublic) {
         return res.status(403).json({ error: "Access denied" });
       }
-      
+
       res.json(template);
     } catch (error: any) {
       console.error("Get prompt template error:", error);
@@ -2097,22 +2103,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: req.userId,
         isSystemTemplate: false,
       });
-      
+
       if (!validationResult.success) {
         const errors = validationResult.error.errors.map(e => e.message).join(', ');
         return res.status(400).json({ error: `Validation failed: ${errors}` });
       }
 
-      const { 
-        name, 
-        description, 
-        category, 
-        systemPrompt, 
-        firstMessage, 
+      const {
+        name,
+        description,
+        category,
+        systemPrompt,
+        firstMessage,
         variables,
         suggestedVoiceTone,
         suggestedPersonality,
-        isPublic 
+        isPublic
       } = validationResult.data;
 
       // Extract variables from template using {{variable}} pattern
@@ -2120,7 +2126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .map((v: string) => v.replace(/\{\{|\}\}/g, ''));
       const firstMsgVars = (firstMessage?.match(/\{\{(\w+)\}\}/g) || [])
         .map((v: string) => v.replace(/\{\{|\}\}/g, ''));
-      
+
       const allVariables = Array.from(new Set([...extractedVars, ...firstMsgVars, ...(variables || [])]));
 
       const template = await storage.createPromptTemplate({
@@ -2151,22 +2157,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!template) {
         return res.status(404).json({ error: "Prompt template not found" });
       }
-      
+
       // Only owner can update (not system templates)
       if (template.userId !== req.userId || template.isSystemTemplate) {
         return res.status(403).json({ error: "Cannot modify this template" });
       }
 
-      const { 
-        name, 
-        description, 
-        category, 
-        systemPrompt, 
-        firstMessage, 
+      const {
+        name,
+        description,
+        category,
+        systemPrompt,
+        firstMessage,
         variables,
         suggestedVoiceTone,
         suggestedPersonality,
-        isPublic 
+        isPublic
       } = req.body;
 
       const updates: any = {};
@@ -2178,12 +2184,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (suggestedVoiceTone !== undefined) updates.suggestedVoiceTone = suggestedVoiceTone;
       if (suggestedPersonality !== undefined) updates.suggestedPersonality = suggestedPersonality;
       if (isPublic !== undefined) updates.isPublic = isPublic;
-      
+
       // Re-extract variables whenever systemPrompt or firstMessage changes
       if (systemPrompt !== undefined || firstMessage !== undefined) {
         const finalSystemPrompt = systemPrompt ?? template.systemPrompt;
         const finalFirstMessage = firstMessage ?? template.firstMessage;
-        
+
         const extractedVars = (finalSystemPrompt.match(/\{\{(\w+)\}\}/g) || [])
           .map((v: string) => v.replace(/\{\{|\}\}/g, ''));
         const firstMsgVars = (finalFirstMessage?.match(/\{\{(\w+)\}\}/g) || [])
@@ -2192,7 +2198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await storage.updatePromptTemplate(req.params.id, updates);
-      
+
       const updated = await storage.getPromptTemplate(req.params.id);
       res.json(updated);
     } catch (error: any) {
@@ -2208,7 +2214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!template) {
         return res.status(404).json({ error: "Prompt template not found" });
       }
-      
+
       // Only owner can delete (not system templates)
       if (template.userId !== req.userId || template.isSystemTemplate) {
         return res.status(403).json({ error: "Cannot delete this template" });
@@ -2229,22 +2235,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!template) {
         return res.status(404).json({ error: "Prompt template not found" });
       }
-      
+
       // Allow access if: own template, system template, or public template
       const isOwn = template.userId === req.userId;
       const isSystem = template.isSystemTemplate;
       const isPublic = template.isPublic;
-      
+
       if (!isOwn && !isSystem && !isPublic) {
         return res.status(403).json({ error: "Access denied" });
       }
 
       const { variableValues } = req.body;
-      
+
       // Interpolate variables
       let systemPrompt = template.systemPrompt;
       let firstMessage = template.firstMessage;
-      
+
       if (variableValues && typeof variableValues === 'object') {
         for (const [key, value] of Object.entries(variableValues)) {
           const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
@@ -2264,7 +2270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         suggestedVoiceTone: template.suggestedVoiceTone,
         suggestedPersonality: template.suggestedPersonality,
         usedVariables: variableValues || {},
-        missingVariables: (template.variables || []).filter(v => 
+        missingVariables: (template.variables || []).filter(v =>
           !variableValues || !(v in variableValues)
         )
       });
@@ -2277,12 +2283,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin: Create/manage system templates
   app.post("/api/admin/prompt-templates/system", authenticateToken, requireRole("admin"), async (req: AuthRequest, res: Response) => {
     try {
-      const { 
-        name, 
-        description, 
-        category, 
-        systemPrompt, 
-        firstMessage, 
+      const {
+        name,
+        description,
+        category,
+        systemPrompt,
+        firstMessage,
         variables,
         suggestedVoiceTone,
         suggestedPersonality
@@ -2358,7 +2364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/email-templates", checkAdminOrTeamMember, requireAdminPermission('communications', 'email_settings', 'create'), async (req: AdminRequest, res: Response) => {
     try {
       const { templateType, name, subject, htmlBody, textBody, variables, isActive } = req.body;
-      
+
       if (!templateType || !name || !subject || !htmlBody || !textBody) {
         return res.status(400).json({ error: "templateType, name, subject, htmlBody, and textBody are required" });
       }
@@ -2377,7 +2383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         variables: variables || [],
         isActive: isActive !== undefined ? isActive : true,
       });
-      
+
       res.json(template);
     } catch (error: any) {
       console.error("Create email template error:", error);
@@ -2500,7 +2506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const batchService = new BatchCallingService(credential.apiKey);
       const batchJob = await batchService.getBatch(batchId);
 
-      res.json({ 
+      res.json({
         batchJob,
         campaign: {
           id: campaign.id,
@@ -2523,10 +2529,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Include owner info for admin context
-      const [owner] = await db.select({ 
-        id: users.id, 
-        name: users.name, 
-        email: users.email 
+      const [owner] = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email
       }).from(users).where(eq(users.id, campaign.userId)).limit(1);
 
       res.json({ ...campaign, owner: owner || null });
@@ -2544,7 +2550,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const contactList = await storage.getCampaignContacts(campaign.id);
-      
+
       res.json(contactList);
     } catch (error: any) {
       console.error("Admin get campaign contacts error:", error);
@@ -2605,14 +2611,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/migrate-call-user-ids", authenticateToken, requireRole("admin"), async (req: AuthRequest, res: Response) => {
     try {
       console.log(`📊 [Admin] Starting call userId migration`);
-      
+
       let totalProcessed = 0;
       let migrated = 0;
       let failed = 0;
       const errors: string[] = [];
       const unresolvedCallIds: string[] = [];
       const BATCH_SIZE = 500;
-      
+
       // Process in batches until no orphaned calls remain
       while (true) {
         // Find next batch of orphaned calls, ordered by id for consistent processing
@@ -2632,18 +2638,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ))
           .orderBy(calls.id)
           .limit(BATCH_SIZE);
-        
+
         if (orphanedCalls.length === 0) {
           console.log(`   No more orphaned calls to process`);
           break;
         }
-        
+
         console.log(`   Processing batch of ${orphanedCalls.length} orphaned calls`);
         totalProcessed += orphanedCalls.length;
-        
+
         for (const call of orphanedCalls) {
           let resolvedUserId: string | null = null;
-          
+
           try {
             // Try to resolve userId from campaign
             if (call.campaignId) {
@@ -2652,12 +2658,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 .from(campaigns)
                 .where(eq(campaigns.id, call.campaignId))
                 .limit(1);
-              
+
               if (campaign?.userId) {
                 resolvedUserId = campaign.userId;
               }
             }
-            
+
             // Try to resolve from incoming connection
             if (!resolvedUserId && call.incomingConnectionId) {
               const [connection] = await db
@@ -2665,12 +2671,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 .from(incomingConnections)
                 .where(eq(incomingConnections.id, call.incomingConnectionId))
                 .limit(1);
-              
+
               if (connection?.userId) {
                 resolvedUserId = connection.userId;
               }
             }
-            
+
             if (resolvedUserId) {
               await db
                 .update(calls)
@@ -2681,17 +2687,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Mark call with a special "ORPHANED" flag in metadata to prevent reprocessing
               // Set userId to empty string to mark as processed but unresolved
               // These calls have no resolvable owner and need manual review
-              const currentMetadata = call.campaignId || call.incomingConnectionId 
+              const currentMetadata = call.campaignId || call.incomingConnectionId
                 ? { orphaned: true, reason: 'Owner reference exists but owner not found' }
                 : { orphaned: true, reason: 'No campaign or connection reference' };
-              
+
               await db
                 .update(calls)
-                .set({ 
+                .set({
                   metadata: sql`COALESCE(metadata, '{}')::jsonb || ${JSON.stringify(currentMetadata)}::jsonb`
                 })
                 .where(eq(calls.id, call.id));
-              
+
               failed++;
               if (unresolvedCallIds.length < 500) {
                 unresolvedCallIds.push(call.id);
@@ -2707,7 +2713,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
         }
-        
+
         // Safety check - if we've processed many calls without finding resolvable owners
         // and the same orphaned calls keep appearing, prevent infinite loop
         if (totalProcessed > 10000 && migrated === 0) {
@@ -2715,9 +2721,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           break;
         }
       }
-      
+
       console.log(`✅ [Admin] Migration complete: ${migrated} migrated, ${failed} unresolvable, ${totalProcessed} total processed`);
-      
+
       res.json({
         success: true,
         totalProcessed,
@@ -2725,7 +2731,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         unresolvable: failed,
         unresolvedCallIds: unresolvedCallIds.slice(0, 100), // Return first 100 unresolved IDs for manual review
         errors: errors.slice(0, 50), // Return first 50 errors
-        message: failed > 0 
+        message: failed > 0
           ? `${migrated} calls migrated, ${failed} calls have no resolvable owner (missing campaign/connection reference)`
           : `Successfully migrated all ${migrated} calls`
       });
@@ -2734,18 +2740,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to migrate call user IDs" });
     }
   });
-  
+
   // Start the campaign scheduler for automatic pause/resume based on time windows
   CampaignScheduler.startBackgroundScheduler();
-  
+
   // Setup Plivo WebSocket stream on httpServer for OpenAI Realtime audio streaming
   setupPlivoStream(httpServer);
-  
+
   // Setup Plivo-ElevenLabs WebSocket stream (ISOLATED from Plivo+OpenAI)
   initPlivoElevenLabsStream(httpServer);
-  
+
   // Setup Twilio-OpenAI WebSocket stream for Media Streams audio bridging
   setupTwilioOpenAIStreamHandler(httpServer);
-  
+
   return httpServer;
 }

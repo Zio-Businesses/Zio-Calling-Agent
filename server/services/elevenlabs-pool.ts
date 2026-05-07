@@ -847,6 +847,8 @@ export class ElevenLabsPoolService {
    * @returns The assigned credential, or null if no active credentials available
    */
   static async getUserCredential(userId: string): Promise<ElevenLabsCredential | null> {
+    console.log(`🔍 [User Affinity] Getting credential for user ${userId}...`);
+    
     // Step 1: Check if user already has a credential assigned
     const [user] = await db
       .select({ elevenLabsCredentialId: users.elevenLabsCredentialId })
@@ -868,11 +870,11 @@ export class ElevenLabsPoolService {
         .limit(1);
 
       if (existingCredential) {
-        console.log(`🔑 [User Affinity] User ${userId} using existing credential: ${existingCredential.name}`);
+        console.log(`🔑 [User Affinity] User ${userId} using existing assigned credential: ${existingCredential.name} (${existingCredential.id})`);
         return existingCredential;
       }
       // Credential is inactive/deleted - need to reassign
-      console.log(`⚠️ [User Affinity] User ${userId}'s credential is inactive, reassigning...`);
+      console.log(`⚠️ [User Affinity] User ${userId}'s assigned credential ${user.elevenLabsCredentialId} is inactive/missing, reassigning...`);
     }
 
     // Step 2: Check if user has existing agents with credentials (migration path)
@@ -902,12 +904,13 @@ export class ElevenLabsPoolService {
       if (agentCredential) {
         // Adopt this credential for the user
         await this.assignUserToCredential(userId, agentCredential.id);
-        console.log(`🔑 [User Affinity] User ${userId} adopted credential from existing agent: ${agentCredential.name}`);
+        console.log(`🔑 [User Affinity] User ${userId} adopted credential from existing agent: ${agentCredential.name} (${agentCredential.id})`);
         return agentCredential;
       }
     }
 
-    // Step 3: Check if user has a private credential that isn't assigned yet
+    // Step 3: Check if user has a private credential that isn't assigned yet (BYOK)
+    console.log(`🔍 [User Affinity] Checking for private credentials for user ${userId}...`);
     const [privateCredential] = await db
       .select()
       .from(elevenLabsCredentials)
@@ -921,20 +924,21 @@ export class ElevenLabsPoolService {
 
     if (privateCredential) {
       await this.assignUserToCredential(userId, privateCredential.id);
-      console.log(`🔑 [User Affinity] User ${userId} using their private credential: ${privateCredential.name}`);
+      console.log(`🔑 [User Affinity] User ${userId} using their private BYOK credential: ${privateCredential.name} (${privateCredential.id})`);
       return privateCredential;
     }
 
-    // Step 4: Assign new credential using threshold-based selection
+    // Step 4: Assign new credential from shared pool using threshold-based selection
+    console.log(`🔍 [User Affinity] Assigning new shared credential for user ${userId}...`);
     const credential = await this.selectCredentialForNewUser();
     if (!credential) {
-      console.error(`❌ [User Affinity] No active credentials available for user ${userId}`);
+      console.error(`❌ [User Affinity] No active shared credentials available in pool for user ${userId}`);
       return null;
     }
 
     // Assign user to this credential
     await this.assignUserToCredential(userId, credential.id);
-    console.log(`🔑 [User Affinity] User ${userId} assigned to credential: ${credential.name} (${credential.totalAssignedAgents}/${credential.maxAgentsThreshold} agents)`);
+    console.log(`🔑 [User Affinity] User ${userId} assigned to shared credential: ${credential.name} (${credential.id}) [${credential.totalAssignedAgents}/${credential.maxAgentsThreshold} agents]`);
     return credential;
   }
 

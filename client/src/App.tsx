@@ -80,6 +80,7 @@ import FeaturesPage from "@/pages/FeaturesPage";
 import PricingPage from "@/pages/PricingPage";
 import UseCasesPage from "@/pages/UseCasesPage";
 import IntegrationsPage from "@/pages/IntegrationsPage";
+import Integrations from "@/pages/Integrations";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { NotificationBell } from "@/components/NotificationBell";
 import { HeaderBannerNotifications } from "@/components/HeaderBannerNotifications";
@@ -350,6 +351,7 @@ function UserRouter() {
                 <Route path="/app/flows" component={FlowsPage} />
                 <Route path="/app/outbound" component={() => <div className="text-center py-16 text-muted-foreground">Outbound page coming soon</div>} />
                 <Route path="/app/settings" component={Settings} />
+                <Route path="/app/integrations" component={Integrations} />
                 <Route path="/app/developers" component={() => <div className="text-center py-16 text-muted-foreground">Developers page coming soon</div>} />
                 <Route component={NotFound} />
               </Switch>

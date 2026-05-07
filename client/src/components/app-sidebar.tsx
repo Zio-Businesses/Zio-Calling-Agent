@@ -14,7 +14,7 @@
  * Respect the author's rights and Envato licensing terms.
  * ============================================================
  */
-import { Users, BookOpen, Mic, Link as LinkIcon, Phone, Settings, ChevronsUpDown, Plus, BarChart3, Home, Target, LogOut, Coins, Shield, CreditCard, TrendingUp, UserCheck, Workflow, Webhook, ClipboardList, Calendar, Layout, FileText, Wrench, Globe, Bot, ContactRound, MessageSquare } from "lucide-react";
+import { Users, BookOpen, Mic, Link as LinkIcon, Phone, Settings, ChevronsUpDown, Plus, BarChart3, Home, Target, LogOut, Coins, Shield, CreditCard, TrendingUp, UserCheck, Workflow, Webhook, ClipboardList, Calendar, Layout, FileText, Wrench, Globe, Bot, ContactRound, MessageSquare, Zap } from "lucide-react";
 import { usePluginStatus } from "@/hooks/use-plugin-status";
 import {
   Sidebar,
@@ -82,6 +82,7 @@ export function AppSidebar() {
   const telephonyItems = [
     { title: t('nav.allContacts'), url: "/app/contacts", icon: UserCheck, iconColor: "text-brand" },
     { title: t('nav.phoneNumbers'), url: "/app/phone-numbers", icon: Phone, iconColor: "text-emerald-500" },
+    { title: t('nav.integrations', 'Integrations'), url: "/app/integrations", icon: Zap, iconColor: "text-amber-500" },
   ];
 
   const { isEnabled: isMessagingEnabled } = usePluginStatus('messaging') as { isEnabled: boolean };

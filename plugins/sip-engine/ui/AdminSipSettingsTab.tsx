@@ -488,7 +488,7 @@ function ElevenLabsSipGuide() {
         <CardContent>
           <ol className="space-y-4">
             {[
-              'Ensure ElevenLabs API key is configured in Admin Settings > Integrations',
+              'Ensure ElevenLabs API key is configured in Admin Settings > ElevenLabs',
               'Create a SIP Trunk: Go to Phone Numbers > SIP Trunks and click "Add SIP Trunk"',
               'Select "ElevenLabs SIP" as the engine and choose your SIP provider',
               'Enter your SIP credentials (host, username, password from your provider)',

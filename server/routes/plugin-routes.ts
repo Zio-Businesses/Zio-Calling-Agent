@@ -13,10 +13,10 @@ import fs from 'fs';
 
 import { scheduleGracefulRestart as scheduleServerRestart } from '../utils/graceful-restart';
 import { fileURLToPath } from 'url';
-import { 
-  discoverPlugins, 
-  getPluginStatus, 
-  setPluginEnabled, 
+import {
+  discoverPlugins,
+  getPluginStatus,
+  setPluginEnabled,
   getPluginManifest,
   getPluginManifestFromDisk,
   getPlugin
@@ -78,13 +78,13 @@ export const userPluginRouter = Router();
 userPluginRouter.get('/capabilities', async (req, res) => {
   // Cache for 60 seconds - capabilities rarely change
   res.setHeader('Cache-Control', 'private, max-age=60');
-  
+
   try {
     const plugins = await getPluginStatus();
-    
+
     const capabilities: Record<string, boolean> = {};
     const pluginBundles: Record<string, string> = {};
-    
+
     for (const plugin of plugins) {
       if (plugin.enabled && plugin.registered) {
         capabilities[plugin.name] = true;
@@ -95,15 +95,15 @@ userPluginRouter.get('/capabilities', async (req, res) => {
         }
       }
     }
-    
+
     // Check if SIP Engine plugin is globally enabled
     const sipPluginEnabled = capabilities['sip-engine'] ?? false;
-    
+
     // Check if user has SIP access via their plan
     let userHasSipAccess = false;
     let sipEnginesAllowed: string[] = [];
     let maxConcurrentSipCalls = 0;
-    
+
     // Get user's plan capabilities if authenticated
     const userId = (req as any).userId;
     if (userId && sipPluginEnabled) {
@@ -116,10 +116,10 @@ userPluginRouter.get('/capabilities', async (req, res) => {
         console.warn('[Plugin Capabilities] Could not get user plan capabilities:', err);
       }
     }
-    
+
     // SIP Engine is accessible only if plugin is enabled AND user's plan allows it
     const sipEngineAccess = sipPluginEnabled && userHasSipAccess;
-    
+
     res.json({
       success: true,
       data: {
@@ -194,7 +194,7 @@ publicPluginRouter.get('/health', async (_req, res) => {
           const existingTables = new Set(
             (tableCheckResult.rows as Array<{ table_name: string }>).map(r => r.table_name)
           );
-          
+
           for (const table of safeTables) {
             if (!existingTables.has(table)) {
               missingTables.push(table);
@@ -223,7 +223,7 @@ publicPluginRouter.get('/health', async (_req, res) => {
         registered: plugin.registered,
         tablesStatus,
         missingTables,
-        error: plugin.error || (missingTables.length > 0 
+        error: plugin.error || (missingTables.length > 0
           ? `Missing database tables: ${missingTables.join(', ')}. Run the migration SQL file.`
           : undefined),
       });
@@ -296,21 +296,21 @@ publicPluginRouter.get('/:name/bundle', async (req, res) => {
   try {
     const { name } = req.params;
     const plugin = getPlugin(name);
-    
+
     if (!plugin) {
       return res.status(404).json({
         success: false,
         error: 'Plugin not found',
       });
     }
-    
+
     if (!plugin.enabled || !plugin.registered) {
       return res.status(403).json({
         success: false,
         error: 'Plugin is not enabled',
       });
     }
-    
+
     const manifest = plugin.manifest;
     if (!manifest.ui?.frontendBundle) {
       return res.status(404).json({
@@ -318,7 +318,7 @@ publicPluginRouter.get('/:name/bundle', async (req, res) => {
         error: 'Plugin has no frontend bundle',
       });
     }
-    
+
     const bundlePath = path.join(pluginsDir, name, manifest.ui.frontendBundle);
     const pluginDir = path.join(pluginsDir, name);
     const resolvedBundlePath = path.resolve(bundlePath);
@@ -328,7 +328,7 @@ publicPluginRouter.get('/:name/bundle', async (req, res) => {
         error: 'Invalid bundle path',
       });
     }
-    
+
     if (!fs.existsSync(bundlePath)) {
       return res.status(404).json({
         success: false,
@@ -372,15 +372,15 @@ publicPluginRouter.get('/:name/bundle', async (req, res) => {
     const stats = fs.statSync(bundlePath);
     const etag = `"${stats.size}-${stats.mtime.getTime()}"`;
     const lastModified = stats.mtime.toUTCString();
-    
+
     // Check If-None-Match for 304 response
     if (req.headers['if-none-match'] === etag) {
       return res.status(304).end();
     }
-    
+
     // Read file content directly to prevent any middleware transformation
     const bundleContent = fs.readFileSync(bundlePath, 'utf-8');
-    
+
     // Set headers to explicitly prevent Vite/middleware transformation
     res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -389,10 +389,10 @@ publicPluginRouter.get('/:name/bundle', async (req, res) => {
     // Cache with revalidation - client caches but must check ETag on expiry
     res.setHeader('Cache-Control', process.env.NODE_ENV === 'production' ? 'public, max-age=300, must-revalidate' : 'no-cache');
     res.setHeader('X-Vite-Skip', 'true');
-    
+
     // Send raw content as string
     res.send(bundleContent);
-    
+
   } catch (error: any) {
     console.error('[Plugin Routes] Error serving bundle:', error);
     res.status(500).json({
@@ -409,7 +409,7 @@ publicPluginRouter.get('/:name/bundle', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const plugins = await getPluginStatus();
-    
+
     res.json({
       success: true,
       data: {
@@ -439,7 +439,7 @@ router.get('/:name', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid plugin name' });
     }
     const manifest = getPluginManifest(name) || getPluginManifestFromDisk(name);
-    
+
     if (!manifest) {
       return res.status(404).json({
         success: false,
@@ -447,9 +447,9 @@ router.get('/:name', async (req, res) => {
         message: `Plugin '${name}' is not installed`,
       });
     }
-    
+
     const status = (await getPluginStatus()).find(p => p.name === name);
-    
+
     res.json({
       success: true,
       data: {
@@ -479,7 +479,7 @@ router.put('/:name/enable', requireAdminPermission('settings', 'plugins', 'updat
       return res.status(400).json({ success: false, error: 'Invalid plugin name' });
     }
     const manifest = getPluginManifest(name) || getPluginManifestFromDisk(name);
-    
+
     if (!manifest) {
       return res.status(404).json({
         success: false,
@@ -487,9 +487,9 @@ router.put('/:name/enable', requireAdminPermission('settings', 'plugins', 'updat
         message: `Plugin '${name}' is not installed`,
       });
     }
-    
+
     await setPluginEnabled(name, true);
-    
+
     res.json({
       success: true,
       message: `Plugin '${manifest.displayName}' enabled. Server will restart automatically to apply changes.`,
@@ -521,7 +521,7 @@ router.put('/:name/disable', requireAdminPermission('settings', 'plugins', 'upda
       return res.status(400).json({ success: false, error: 'Invalid plugin name' });
     }
     const manifest = getPluginManifest(name) || getPluginManifestFromDisk(name);
-    
+
     if (!manifest) {
       return res.status(404).json({
         success: false,
@@ -529,9 +529,9 @@ router.put('/:name/disable', requireAdminPermission('settings', 'plugins', 'upda
         message: `Plugin '${name}' is not installed`,
       });
     }
-    
+
     await setPluginEnabled(name, false);
-    
+
     res.json({
       success: true,
       message: `Plugin '${manifest.displayName}' disabled. Server will restart automatically to apply changes.`,
@@ -559,7 +559,7 @@ router.put('/:name/disable', requireAdminPermission('settings', 'plugins', 'upda
 router.get('/discover/available', async (req, res) => {
   try {
     const manifests = discoverPlugins();
-    
+
     res.json({
       success: true,
       data: {

@@ -131,7 +131,7 @@ export const agents = pgTable("agents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   elevenLabsCredentialId: varchar("eleven_labs_credential_id").references(() => elevenLabsCredentials.id, { onDelete: "set null" }), // Which API key this agent uses
-  
+
   // Telephony Provider Configuration - Determines which engine handles calls
   // 'twilio' = ElevenLabs Conversational AI via Twilio (default)
   // 'plivo' = Plivo telephony + OpenAI Realtime API
@@ -139,19 +139,19 @@ export const agents = pgTable("agents", {
   // 'elevenlabs-sip' = ElevenLabs native SIP (user's own SIP trunk)
   // 'openai-sip' = OpenAI Realtime API with SIP (incoming only)
   telephonyProvider: text("telephony_provider").default("twilio"), // 'twilio' | 'plivo' | 'twilio_openai' | 'elevenlabs-sip' | 'openai-sip'
-  
+
   // SIP Trunk Configuration (used when telephonyProvider='elevenlabs-sip' or 'openai-sip')
   sipTrunkId: varchar("sip_trunk_id"), // References sip_trunks.id for SIP-based engines
   sipPhoneNumberId: varchar("sip_phone_number_id"), // References sip_phone_numbers.id for SIP-based calls
-  
+
   // OpenAI Realtime Configuration (used when telephonyProvider='plivo', 'twilio_openai', or 'openai-sip')
   openaiVoice: text("openai_voice"), // 'alloy' | 'echo' | 'shimmer' | 'ash' | 'ballad' | 'coral' | 'sage' | 'verse' | 'cedar' | 'marin'
   openaiCredentialId: varchar("openai_credential_id"), // References openaiCredentials.id (can't use .references() due to declaration order)
-  
+
   // Agent Type: Determines execution pipeline and usage
   // NO DEFAULT - must be explicitly set to prevent misconfiguration
   type: text("type").notNull(), // 'incoming' (ElevenLabs Conversational AI for receiving calls) or 'flow' (STT+TTS+FlowExecutionBridge for campaigns)
-  
+
   // Incoming Agent Fields (used when type='incoming')
   // Incoming agents are used for receiving calls on purchased phone numbers with call transfer capability
   name: text("name").notNull(),
@@ -163,11 +163,11 @@ export const agents = pgTable("agents", {
   llmModel: text("llm_model").default("gpt-4o-mini"),
   temperature: doublePrecision("temperature").default(0.5),
   elevenLabsAgentId: text("eleven_labs_agent_id"),
-  
+
   // Call Transfer Configuration (for incoming agents)
   transferPhoneNumber: text("transfer_phone_number"),
   transferEnabled: boolean("transfer_enabled").default(false),
-  
+
   // ElevenLabs System Tools Configuration (for incoming agents)
   detectLanguageEnabled: boolean("detect_language_enabled").default(false),
   endConversationEnabled: boolean("end_conversation_enabled").default(false),
@@ -178,21 +178,21 @@ export const agents = pgTable("agents", {
   messagingWhatsappTemplate: text("messaging_whatsapp_template"),
   messagingWhatsappVariables: text("messaging_whatsapp_variables"),
   expressiveMode: boolean("expressive_mode").default(false),
-  
+
   // Knowledge Base (for incoming agents)
   knowledgeBaseIds: text("knowledge_base_ids").array(),
-  
+
   // Shared Voice Configuration (used by both Incoming and Flow agents)
   elevenLabsVoiceId: text("eleven_labs_voice_id"),
   voiceStability: doublePrecision("voice_stability").default(0.65),
   voiceSimilarityBoost: doublePrecision("voice_similarity_boost").default(0.85),
   voiceSpeed: doublePrecision("voice_speed").default(0.92),
   turnTimeout: doublePrecision("turn_timeout").default(1.5),
-  
+
   // Flow Agent Fields (used when type='flow')
   flowId: varchar("flow_id"), // Reference to flows table for Flow Agents
   maxDurationSeconds: integer("max_duration_seconds").default(600), // Max conversation duration in seconds (default 10 min, range 60-1800)
-  
+
   // Legacy/Common Fields
   agentLink: text("agent_link"),
   config: jsonb("config"),
@@ -221,13 +221,13 @@ export const incomingAgents = pgTable("incoming_agents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   elevenLabsCredentialId: varchar("eleven_labs_credential_id").references(() => elevenLabsCredentials.id, { onDelete: "set null" }),
-  
+
   // Basic Configuration
   name: text("name").notNull(),
   elevenLabsAgentId: text("eleven_labs_agent_id").notNull(), // Always uses ElevenLabs Conversational AI
   elevenLabsVoiceId: text("eleven_labs_voice_id").notNull(),
   language: text("language").notNull().default("en"),
-  
+
   // AI Configuration
   systemPrompt: text("system_prompt").notNull(),
   personality: text("personality").default("helpful"),
@@ -235,11 +235,11 @@ export const incomingAgents = pgTable("incoming_agents", {
   firstMessage: text("first_message").notNull().default("Hello! How can I help you today?"),
   llmModel: text("llm_model").default("gpt-4o-mini"),
   temperature: doublePrecision("temperature").default(0.5),
-  
+
   // Call Transfer Configuration
   transferPhoneNumber: text("transfer_phone_number"), // Phone number to transfer calls to
   transferEnabled: boolean("transfer_enabled").notNull().default(false),
-  
+
   // Business Hours Configuration
   businessHoursEnabled: boolean("business_hours_enabled").notNull().default(false),
   businessHoursStart: text("business_hours_start"), // Format: "09:00"
@@ -247,10 +247,10 @@ export const incomingAgents = pgTable("incoming_agents", {
   businessDays: text("business_days").array(), // ["monday", "tuesday", etc.]
   businessHoursTimezone: text("business_hours_timezone").default("America/New_York"),
   afterHoursMessage: text("after_hours_message").default("Thank you for calling. We're currently closed. Please call back during business hours."),
-  
+
   // Knowledge Base
   knowledgeBaseIds: text("knowledge_base_ids").array(),
-  
+
   // Metadata
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -275,7 +275,7 @@ export const phoneNumbers = pgTable("phone_numbers", {
   nextBillingDate: timestamp("next_billing_date"), // Next date when credits will be charged
   purchasedAt: timestamp("purchased_at").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  
+
   // DEPRECATED: Use incoming_connections table instead
   assignedIncomingAgentId: varchar("assigned_incoming_agent_id").references(() => incomingAgents.id, { onDelete: "set null" }),
 });
@@ -319,16 +319,16 @@ export const campaigns = pgTable("campaigns", {
   scheduleTimeEnd: text("schedule_time_end"), // End time in HH:MM format (e.g., "17:00")
   scheduleDays: text("schedule_days").array(), // Array of days: ["monday", "tuesday", "wednesday", etc.]
   scheduleTimezone: text("schedule_timezone").default("America/New_York"), // Timezone for the schedule
-  
+
   // ElevenLabs Batch Calling Integration
   batchJobId: text("batch_job_id"), // ElevenLabs batch job ID when campaign is running
   batchJobStatus: text("batch_job_status"), // pending, in_progress, completed, failed, cancelled
   retryEnabled: boolean("retry_enabled").notNull().default(false), // Whether to auto-retry failed/no-response calls
-  
+
   // Error tracking for failed campaigns
   errorMessage: text("error_message"), // Detailed error message when campaign fails
   errorCode: text("error_code"), // Error code for categorization (e.g., AGENT_NOT_SYNCED, NO_CONTACTS)
-  
+
   config: jsonb("config"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -350,16 +350,16 @@ export const calls = pgTable("calls", {
   userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }), // Direct user ownership for guaranteed isolation
   campaignId: varchar("campaign_id").references(() => campaigns.id, { onDelete: "cascade" }), // Nullable for test/manual/incoming calls
   contactId: varchar("contact_id").references(() => contacts.id, { onDelete: "cascade" }), // Nullable for test/incoming calls
-  
+
   // Agent references - either from campaign (agentId via campaigns table) or incoming call (via connection)
   incomingConnectionId: varchar("incoming_connection_id").references(() => incomingConnections.id, { onDelete: "set null" }), // For incoming calls
-  
+
   // Website Widget reference - for calls initiated through embeddable widgets
   widgetId: varchar("widget_id"), // References websiteWidgets.id (added later in schema)
-  
+
   // DEPRECATED: Use incomingConnectionId instead
   incomingAgentId: varchar("incoming_agent_id").references(() => incomingAgents.id, { onDelete: "set null" }),
-  
+
   phoneNumber: text("phone_number"), // Phone number dialed/caller (for test calls without contacts, or incoming caller)
   fromNumber: text("from_number"), // The phone number that initiated the call (caller ID)
   toNumber: text("to_number"), // The phone number that received the call (destination)
@@ -438,26 +438,26 @@ export const plans = pgTable("plans", {
   stripeProductId: text("stripe_product_id"), // Stripe Product ID
   razorpayPlanId: text("razorpay_plan_id"), // Razorpay Plan ID (monthly)
   razorpayYearlyPlanId: text("razorpay_yearly_plan_id"), // Razorpay Plan ID (yearly)
-  
+
   // PayPal pricing and plan IDs
   paypalMonthlyPrice: decimal("paypal_monthly_price", { precision: 10, scale: 2 }), // PayPal price (supports multiple currencies)
   paypalYearlyPrice: decimal("paypal_yearly_price", { precision: 10, scale: 2 }),
   paypalProductId: text("paypal_product_id"), // PayPal Product ID
   paypalMonthlyPlanId: text("paypal_monthly_plan_id"), // PayPal Plan ID for monthly
   paypalYearlyPlanId: text("paypal_yearly_plan_id"), // PayPal Plan ID for yearly
-  
+
   // Paystack pricing and plan codes (Africa: NGN, GHS, ZAR, KES)
   paystackMonthlyPrice: decimal("paystack_monthly_price", { precision: 10, scale: 2 }),
   paystackYearlyPrice: decimal("paystack_yearly_price", { precision: 10, scale: 2 }),
   paystackMonthlyPlanCode: text("paystack_monthly_plan_code"), // Paystack Plan Code for monthly
   paystackYearlyPlanCode: text("paystack_yearly_plan_code"), // Paystack Plan Code for yearly
-  
+
   // MercadoPago pricing and plan IDs (LATAM: BRL, MXN, ARS, CLP, COP)
   mercadopagoMonthlyPrice: decimal("mercadopago_monthly_price", { precision: 10, scale: 2 }),
   mercadopagoYearlyPrice: decimal("mercadopago_yearly_price", { precision: 10, scale: 2 }),
   mercadopagoMonthlyPlanId: text("mercadopago_monthly_plan_id"), // MercadoPago preapproval_plan_id
   mercadopagoYearlyPlanId: text("mercadopago_yearly_plan_id"),
-  
+
   maxAgents: integer("max_agents").notNull().default(1),
   maxCampaigns: integer("max_campaigns").notNull().default(1),
   maxContactsPerCampaign: integer("max_contacts_per_campaign").notNull().default(5),
@@ -472,20 +472,20 @@ export const plans = pgTable("plans", {
   canPurchaseNumbers: boolean("can_purchase_numbers").notNull().default(false),
   useSystemPool: boolean("use_system_pool").notNull().default(true), // Free plan uses system pool
   features: jsonb("features"), // Additional feature flags
-  
+
   // SIP Engine Plugin - Plan-level access control
   sipEnabled: boolean("sip_enabled").notNull().default(false),
   maxConcurrentSipCalls: integer("max_concurrent_sip_calls").notNull().default(1),
   sipEnginesAllowed: text("sip_engines_allowed").array().default(sql`ARRAY['elevenlabs-sip']::text[]`), // ['elevenlabs-sip', 'openai-sip']
-  
+
   // REST API Plugin - Plan-level access control
   restApiEnabled: boolean("rest_api_enabled").notNull().default(false),
-  
+
   // Team Management Plugin - Plan-level access control
   teamManagementEnabled: boolean("team_management_enabled").notNull().default(false),
   maxTeamMembers: integer("max_team_members").notNull().default(0), // 0 = disabled
   maxCustomRoles: integer("max_custom_roles").notNull().default(0), // 0 = disabled
-  
+
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -537,16 +537,16 @@ export const creditPackages = pgTable("credit_packages", {
   stripeProductId: text("stripe_product_id"),
   stripePriceId: text("stripe_price_id"),
   razorpayItemId: text("razorpay_item_id"), // Razorpay Item ID for credit package
-  
+
   // PayPal credit package pricing
   paypalPrice: decimal("paypal_price", { precision: 10, scale: 2 }), // PayPal price
-  
+
   // Paystack credit package pricing (Africa)
   paystackPrice: decimal("paystack_price", { precision: 10, scale: 2 }), // Paystack price
-  
+
   // MercadoPago credit package pricing (LATAM)
   mercadopagoPrice: decimal("mercadopago_price", { precision: 10, scale: 2 }), // MercadoPago price
-  
+
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -562,21 +562,21 @@ export const userSubscriptions = pgTable("user_subscriptions", {
   currentPeriodEnd: timestamp("current_period_end").notNull(),
   stripeSubscriptionId: text("stripe_subscription_id").unique(), // Unique constraint for idempotency
   razorpaySubscriptionId: text("razorpay_subscription_id").unique(), // Razorpay Subscription ID
-  
+
   // PayPal subscription tracking
   paypalSubscriptionId: text("paypal_subscription_id").unique(), // PayPal Subscription ID
-  
+
   // Paystack subscription tracking (Africa)
   paystackSubscriptionCode: text("paystack_subscription_code").unique(), // Paystack Subscription Code
   paystackCustomerCode: text("paystack_customer_code"), // Paystack Customer Code
   paystackEmailToken: text("paystack_email_token"), // Token for customer management
-  
+
   // MercadoPago subscription tracking (LATAM)
   mercadopagoSubscriptionId: text("mercadopago_subscription_id").unique(), // MercadoPago preapproval ID
-  
+
   cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
   billingPeriod: text("billing_period").notNull().default("monthly"), // 'monthly' or 'yearly'
-  
+
   // Admin-set per-user limit overrides (null = use plan defaults)
   overrideMaxAgents: integer("override_max_agents"), // Override plan's maxAgents
   overrideMaxCampaigns: integer("override_max_campaigns"), // Override plan's maxCampaigns
@@ -587,7 +587,7 @@ export const userSubscriptions = pgTable("user_subscriptions", {
   overrideMaxPhoneNumbers: integer("override_max_phone_numbers"), // Override plan's maxPhoneNumbers
   overrideMaxWidgets: integer("override_max_widgets"), // Override plan's maxWidgets
   overrideIncludedCredits: integer("override_included_credits"), // Override plan's includedCredits
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -1128,7 +1128,7 @@ export interface CallMetadata {
 // ============================================
 
 // Flow node types
-export type FlowNodeType = 
+export type FlowNodeType =
   | "message"      // AI speaks text
   | "question"     // AI asks and waits for response
   | "condition"    // Branch based on response
@@ -1160,7 +1160,7 @@ export interface FlowEdge {
 }
 
 // Node-specific configurations
-export type NodeConfig = 
+export type NodeConfig =
   | MessageNodeConfig
   | QuestionNodeConfig
   | ConditionNodeConfig
@@ -1597,18 +1597,18 @@ export interface ProductStructuredData {
 
 export const seoSettings = pgTable("seo_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Meta Tags - Default values for pages without specific SEO
   defaultTitle: text("default_title").default("AI Calling Platform"),
   defaultDescription: text("default_description").default("Enterprise AI-powered bulk calling platform with voice agents, Twilio integration, and intelligent lead classification."),
   defaultKeywords: text("default_keywords").array().default(sql`ARRAY[]::text[]`),
   defaultOgImage: text("default_og_image").default("/og-image.png"),
-  
+
   // Sitemap Configuration
   sitemapEnabled: boolean("sitemap_enabled").default(true),
   sitemapUrls: jsonb("sitemap_urls").$type<SitemapUrl[]>().default([]),
   sitemapAutoGenerate: boolean("sitemap_auto_generate").default(true),
-  
+
   // Robots.txt Configuration
   robotsEnabled: boolean("robots_enabled").default(true),
   robotsRules: jsonb("robots_rules").$type<RobotsRule[]>().default([
@@ -1619,7 +1619,7 @@ export const seoSettings = pgTable("seo_settings", {
     }
   ]),
   robotsCrawlDelay: integer("robots_crawl_delay").default(0),
-  
+
   // Structured Data / Schema.org
   structuredDataEnabled: boolean("structured_data_enabled").default(true),
   structuredData: jsonb("structured_data").$type<StructuredDataConfig>().default({
@@ -1631,24 +1631,24 @@ export const seoSettings = pgTable("seo_settings", {
     contactEmail: "",
     contactPhone: ""
   }),
-  
+
   // FAQ Structured Data for rich snippets
   structuredDataFaq: jsonb("structured_data_faq").$type<FaqItem[]>().default([]),
   structuredDataFaqEnabled: boolean("structured_data_faq_enabled").default(false),
-  
+
   // Product Structured Data for rich snippets
   structuredDataProduct: jsonb("structured_data_product").$type<ProductStructuredData | null>().default(null),
   structuredDataProductEnabled: boolean("structured_data_product_enabled").default(false),
-  
+
   // Social Media Meta Tags
   twitterHandle: text("twitter_handle"),
   facebookAppId: text("facebook_app_id"),
-  
+
   // Advanced Settings
   canonicalBaseUrl: text("canonical_base_url"),
   googleVerification: text("google_verification"),
   bingVerification: text("bing_verification"),
-  
+
   // Audit
   updatedBy: varchar("updated_by").references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -1670,33 +1670,33 @@ export type SeoSettings = typeof seoSettings.$inferSelect;
 // Analytics Scripts - Admin-configurable tracking scripts (GTM, GA4, Facebook Pixel, etc.)
 export const analyticsScripts = pgTable("analytics_scripts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Script Identity
   name: text("name").notNull(), // Display name (e.g., "Google Tag Manager", "Facebook Pixel")
   type: text("type").notNull().default("custom"), // 'gtm', 'ga4', 'facebook_pixel', 'linkedin', 'twitter', 'tiktok', 'hotjar', 'clarity', 'custom'
-  
+
   // Script Content
   code: text("code").notNull(), // Legacy single code field (for backward compatibility)
   headCode: text("head_code"), // Code to inject in <head> section
   bodyCode: text("body_code"), // Code to inject after <body> tag (e.g., GTM noscript)
-  
+
   // Placement Configuration - Array supports multiple placements (e.g., both head and body for some scripts like GTM)
   placement: text("placement").array().notNull().default(sql`ARRAY['head']::text[]`), // Array of 'head' and/or 'body' - where to inject the script
   loadPriority: integer("load_priority").notNull().default(0), // Higher priority = loads first (within placement group)
-  
+
   // Script Attributes (for <script> tag configuration)
   async: boolean("async").default(false), // Add async attribute
   defer: boolean("defer").default(false), // Add defer attribute
-  
+
   // Status
   enabled: boolean("enabled").notNull().default(true),
-  
+
   // Page Scope - Control where scripts are injected
   hideOnInternalPages: boolean("hide_on_internal_pages").notNull().default(false), // Hide on admin/user dashboard pages
-  
+
   // Notes for admin reference
   description: text("description"),
-  
+
   // Audit
   updatedBy: varchar("updated_by").references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -1719,38 +1719,38 @@ export type AnalyticsScript = typeof analyticsScripts.$inferSelect;
 export const paymentTransactions = pgTable("payment_transactions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  
+
   // Transaction Type
   type: text("type").notNull(), // 'subscription' or 'credits'
-  
+
   // Gateway Information
   gateway: text("gateway").notNull(), // 'stripe', 'razorpay', 'paypal', 'paystack', 'mercadopago'
   gatewayTransactionId: text("gateway_transaction_id"), // Payment intent ID, order ID, etc.
   gatewaySubscriptionId: text("gateway_subscription_id"), // For subscription payments
-  
+
   // Amount & Currency
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("USD"),
-  
+
   // Related Records
   planId: varchar("plan_id").references(() => plans.id, { onDelete: "set null" }),
   creditPackageId: varchar("credit_package_id").references(() => creditPackages.id, { onDelete: "set null" }),
   subscriptionId: varchar("subscription_id").references(() => userSubscriptions.id, { onDelete: "set null" }),
-  
+
   // Transaction Details
   description: text("description").notNull(),
   billingPeriod: text("billing_period"), // 'monthly', 'yearly' for subscriptions
   creditsAwarded: integer("credits_awarded"), // For credit purchases
-  
+
   // Status
   status: text("status").notNull().default("pending"), // 'pending', 'completed', 'failed', 'refunded', 'partially_refunded'
-  
+
   // Invoice Reference
   invoiceId: varchar("invoice_id"), // Will be linked after invoice generation
-  
+
   // Metadata
   metadata: jsonb("metadata"), // Additional gateway-specific data
-  
+
   // Timestamps
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -1770,41 +1770,41 @@ export const refunds = pgTable("refunds", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   transactionId: varchar("transaction_id").notNull().references(() => paymentTransactions.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  
+
   // Refund Details
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("USD"),
-  
+
   // Gateway Information
   gateway: text("gateway").notNull(), // Same as original transaction
   gatewayRefundId: text("gateway_refund_id"), // Refund ID from gateway
-  
+
   // Refund Type
   reason: text("reason").notNull(), // 'admin_request', 'chargeback', 'customer_request', 'duplicate', 'fraudulent'
   initiatedBy: text("initiated_by").notNull(), // 'admin', 'customer', 'gateway' (for chargebacks)
   adminId: varchar("admin_id").references(() => users.id, { onDelete: "set null" }), // Admin who processed refund
-  
+
   // Status
   status: text("status").notNull().default("pending"), // 'pending', 'processing', 'completed', 'failed'
-  
+
   // Credits Reversal
   creditsReversed: integer("credits_reversed"), // Credits taken back
-  
+
   // User Suspension (for chargebacks)
   userSuspended: boolean("user_suspended").notNull().default(false),
-  
+
   // Notes
   adminNote: text("admin_note"), // Internal note from admin
   customerNote: text("customer_note"), // Note visible to customer
-  
+
   // Metadata
   metadata: jsonb("metadata"), // Gateway-specific refund data
-  
+
   // Refund Note PDF
   refundNoteNumber: text("refund_note_number"), // e.g., RN-2024-0001
   pdfUrl: text("pdf_url"), // URL to stored refund note PDF
   pdfGeneratedAt: timestamp("pdf_generated_at"),
-  
+
   // Timestamps
   processedAt: timestamp("processed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -1824,15 +1824,15 @@ export const invoices = pgTable("invoices", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   transactionId: varchar("transaction_id").notNull().references(() => paymentTransactions.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  
+
   // Invoice Number (human-readable)
   invoiceNumber: text("invoice_number").notNull().unique(), // e.g., INV-2024-00001
-  
+
   // Customer Details (snapshot at time of invoice)
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email").notNull(),
   customerAddress: text("customer_address"),
-  
+
   // Invoice Details
   description: text("description").notNull(),
   lineItems: jsonb("line_items").notNull().$type<{
@@ -1841,28 +1841,28 @@ export const invoices = pgTable("invoices", {
     unitPrice: number;
     total: number;
   }[]>(),
-  
+
   // Amounts
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
   tax: decimal("tax", { precision: 10, scale: 2 }).default("0.00"),
   total: decimal("total", { precision: 10, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("USD"),
-  
+
   // Gateway & Payment Info
   gateway: text("gateway").notNull(),
   paymentMethod: text("payment_method"), // 'card', 'bank_transfer', etc.
-  
+
   // PDF Storage
   pdfUrl: text("pdf_url"), // URL to stored PDF
   pdfGeneratedAt: timestamp("pdf_generated_at"),
-  
+
   // Status
   status: text("status").notNull().default("draft"), // 'draft', 'sent', 'paid', 'void'
-  
+
   // Email Delivery
   emailSentAt: timestamp("email_sent_at"),
   emailSentTo: text("email_sent_to"),
-  
+
   // Timestamps
   issuedAt: timestamp("issued_at").notNull().defaultNow(),
   dueAt: timestamp("due_at"),
@@ -1882,24 +1882,24 @@ export type Invoice = typeof invoices.$inferSelect;
 // Payment Webhook Queue - For retry logic on failed webhook processing
 export const paymentWebhookQueue = pgTable("payment_webhook_queue", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Webhook Source
   gateway: text("gateway").notNull(), // 'stripe', 'razorpay', 'paypal', 'paystack', 'mercadopago'
   eventType: text("event_type").notNull(), // e.g., 'payment_intent.succeeded', 'subscription.created'
   eventId: text("event_id").notNull(), // Gateway's event ID for idempotency
-  
+
   // Payload
   payload: jsonb("payload").notNull(), // Full webhook payload
-  
+
   // Processing Status
   status: text("status").notNull().default("pending"), // 'pending', 'processing', 'completed', 'failed', 'expired'
-  
+
   // Retry Information
   attemptCount: integer("attempt_count").notNull().default(0),
   maxAttempts: integer("max_attempts").notNull().default(5),
   lastAttemptAt: timestamp("last_attempt_at"),
   nextRetryAt: timestamp("next_retry_at"),
-  
+
   // Error Tracking
   lastError: text("last_error"),
   errorHistory: jsonb("error_history").$type<{
@@ -1907,11 +1907,11 @@ export const paymentWebhookQueue = pgTable("payment_webhook_queue", {
     error: string;
     timestamp: string;
   }[]>(),
-  
+
   // Related Records (if known)
   userId: varchar("user_id").references(() => users.id, { onDelete: "set null" }),
   transactionId: varchar("transaction_id").references(() => paymentTransactions.id, { onDelete: "set null" }),
-  
+
   // Timestamps
   receivedAt: timestamp("received_at").notNull().defaultNow(),
   processedAt: timestamp("processed_at"),
@@ -1929,24 +1929,24 @@ export type PaymentWebhookQueue = typeof paymentWebhookQueue.$inferSelect;
 // Email Notification Settings - Admin-configurable email types
 export const emailNotificationSettings = pgTable("email_notification_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Email Type
   eventType: text("event_type").notNull().unique(), // 'welcome', 'purchase_confirmation', 'low_credits', 'campaign_completed', etc.
   displayName: text("display_name").notNull(), // Human-readable name
   description: text("description"), // Description of when this email is sent
-  
+
   // Settings
   isEnabled: boolean("is_enabled").notNull().default(true),
-  
+
   // Template Reference (optional - for custom templates)
   templateId: varchar("template_id").references(() => emailTemplates.id, { onDelete: "set null" }),
-  
+
   // Thresholds (for certain event types)
   thresholdValue: integer("threshold_value"), // e.g., credit count for low_credits alert
-  
+
   // Metadata
   category: text("category").notNull().default("general"), // 'authentication', 'billing', 'campaigns', 'account', 'general'
-  
+
   // Audit
   updatedBy: varchar("updated_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -2077,15 +2077,15 @@ export const plivoPhoneNumbers = pgTable("plivo_phone_numbers", {
   numberType: text("number_type").default("local"), // local, toll_free, national
   capabilities: jsonb("capabilities"), // { voice: true, sms: true }
   status: text("status").notNull().default("active"), // active, pending, released, suspended
-  
+
   // Pricing (admin-configured credits)
   purchaseCredits: integer("purchase_credits").notNull().default(0),
   monthlyCredits: integer("monthly_credits").notNull().default(0),
   nextBillingDate: timestamp("next_billing_date"),
-  
+
   // Incoming agent connection
   assignedAgentId: varchar("assigned_agent_id").references(() => agents.id, { onDelete: "set null" }),
-  
+
   purchasedAt: timestamp("purchased_at").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -2109,27 +2109,27 @@ export const plivoCalls = pgTable("plivo_calls", {
   agentId: varchar("agent_id").references(() => agents.id, { onDelete: "set null" }),
   plivoPhoneNumberId: varchar("plivo_phone_number_id").references(() => plivoPhoneNumbers.id, { onDelete: "set null" }),
   openaiCredentialId: varchar("openai_credential_id").references(() => openaiCredentials.id, { onDelete: "set null" }),
-  
+
   // Plivo identifiers
   plivoCallUuid: text("plivo_call_uuid").unique(),
   fromNumber: text("from_number").notNull(),
   toNumber: text("to_number").notNull(),
-  
+
   // OpenAI session
   openaiSessionId: text("openai_session_id"),
   openaiVoice: text("openai_voice").default("alloy"),
   openaiModel: text("openai_model").default("gpt-realtime-1.5"),
-  
+
   // Call status
   status: text("status").notNull().default("pending"), // pending, initiated, ringing, in-progress, completed, busy, failed, no-answer, canceled
   callDirection: text("call_direction").notNull().default("outbound"), // inbound, outbound
   duration: integer("duration"), // seconds
-  
+
   // Recording
   recordingId: text("recording_id"),
   recordingUrl: text("recording_url"),
   recordingDuration: integer("recording_duration"),
-  
+
   // AI analysis
   transcript: text("transcript"),
   aiSummary: text("ai_summary"),
@@ -2138,12 +2138,12 @@ export const plivoCalls = pgTable("plivo_calls", {
   classification: text("classification"), // hot, warm, cold, lost
   keyPoints: jsonb("key_points"), // string[]
   nextActions: jsonb("next_actions"), // string[]
-  
+
   // Call transfer
   wasTransferred: boolean("was_transferred").default(false),
   transferredTo: text("transferred_to"),
   transferredAt: timestamp("transferred_at"),
-  
+
   // Timestamps
   startedAt: timestamp("started_at"),
   answeredAt: timestamp("answered_at"),
@@ -2236,22 +2236,22 @@ export const twilioOpenaiCalls = pgTable("twilio_openai_calls", {
   agentId: varchar("agent_id").references(() => agents.id, { onDelete: "set null" }),
   twilioPhoneNumberId: varchar("twilio_phone_number_id").references(() => phoneNumbers.id, { onDelete: "set null" }),
   openaiCredentialId: varchar("openai_credential_id").references(() => openaiCredentials.id, { onDelete: "set null" }),
-  
+
   twilioCallSid: text("twilio_call_sid").unique(),
   fromNumber: text("from_number").notNull(),
   toNumber: text("to_number").notNull(),
-  
+
   openaiSessionId: text("openai_session_id"),
   openaiVoice: text("openai_voice").default("alloy"),
   openaiModel: text("openai_model").default("gpt-realtime-1.5"),
-  
+
   status: text("status").notNull().default("pending"),
   callDirection: text("call_direction").notNull().default("outbound"),
   duration: integer("duration"),
-  
+
   recordingUrl: text("recording_url"),
   recordingDuration: integer("recording_duration"),
-  
+
   transcript: text("transcript"),
   aiSummary: text("ai_summary"),
   leadQualityScore: integer("lead_quality_score"),
@@ -2259,11 +2259,11 @@ export const twilioOpenaiCalls = pgTable("twilio_openai_calls", {
   classification: text("classification"),
   keyPoints: jsonb("key_points"),
   nextActions: jsonb("next_actions"),
-  
+
   wasTransferred: boolean("was_transferred").default(false),
   transferredTo: text("transferred_to"),
   transferredAt: timestamp("transferred_at"),
-  
+
   startedAt: timestamp("started_at"),
   answeredAt: timestamp("answered_at"),
   endedAt: timestamp("ended_at"),
@@ -2337,12 +2337,12 @@ export type LeadStage = typeof leadStages.$inferSelect;
 export const leads = pgTable("leads", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  
+
   // Source - Either from a campaign or incoming connection
   sourceType: text("source_type").notNull(), // 'campaign' | 'incoming'
   campaignId: varchar("campaign_id").references(() => campaigns.id, { onDelete: "cascade" }),
   incomingConnectionId: varchar("incoming_connection_id").references(() => incomingConnections.id, { onDelete: "cascade" }),
-  
+
   // Contact Information
   firstName: text("first_name"),
   lastName: text("last_name"),
@@ -2350,54 +2350,54 @@ export const leads = pgTable("leads", {
   email: text("email"),
   company: text("company"),
   customFields: jsonb("custom_fields").$type<Record<string, unknown>>(),
-  
+
   // Pipeline Status
   stageId: varchar("stage_id").references(() => leadStages.id, { onDelete: "set null" }),
   stage: text("stage").notNull().default("new"), // Fallback stage name: new, hot, appointment, form_submitted, follow_up, not_interested, no_answer
-  
+
   // AI-Generated Insights
   leadScore: integer("lead_score"), // 1-100 AI-generated score
   aiSummary: text("ai_summary"), // AI-generated call summary
   aiNextAction: text("ai_next_action"), // Suggested next action
   sentiment: text("sentiment"), // positive, neutral, negative
   aiCategory: text("ai_category"), // AI-assigned category: 'warm' | 'hot' | 'appointment_booked' | 'form_submitted' | 'call_transfer' | 'need_follow_up' | null (uncategorized)
-  
+
   // Tool Execution Flags - Show badges on lead card
   hasAppointment: boolean("has_appointment").notNull().default(false),
   hasFormSubmission: boolean("has_form_submission").notNull().default(false),
   hasTransfer: boolean("has_transfer").notNull().default(false),
   hasCallback: boolean("has_callback").notNull().default(false),
-  
+
   // Appointment Details (if hasAppointment)
   appointmentDate: timestamp("appointment_date"),
   appointmentDetails: jsonb("appointment_details").$type<Record<string, unknown>>(),
-  
+
   // Form Submission Details (if hasFormSubmission)
   formData: jsonb("form_data").$type<Record<string, unknown>>(),
-  
+
   // Transfer Details (if hasTransfer)
   transferredTo: text("transferred_to"),
   transferredAt: timestamp("transferred_at"),
-  
+
   // Callback/Follow-up Scheduling
   callbackScheduled: timestamp("callback_scheduled"),
   callbackCompleted: boolean("callback_completed").notNull().default(false),
-  
+
   // Call Reference - Link to the call record
   callId: varchar("call_id").references(() => calls.id, { onDelete: "set null" }),
   plivoCallId: varchar("plivo_call_id").references(() => plivoCalls.id, { onDelete: "set null" }),
   twilioOpenaiCallId: varchar("twilio_openai_call_id").references(() => twilioOpenaiCalls.id, { onDelete: "set null" }),
-  
+
   // Total calls made to this lead (for follow-ups)
   totalCalls: integer("total_calls").notNull().default(1),
   lastCallAt: timestamp("last_call_at"),
-  
+
   // Tags for organization
   tags: text("tags").array(),
-  
+
   // Assignment for team accounts
   assignedUserId: varchar("assigned_user_id").references(() => users.id, { onDelete: "set null" }),
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -2465,19 +2465,19 @@ export function determineAICategory(lead: {
   if (lead.hasAppointment) return AI_LEAD_CATEGORIES.APPOINTMENT_BOOKED;
   if (lead.hasFormSubmission) return AI_LEAD_CATEGORIES.FORM_SUBMITTED;
   if (lead.hasTransfer) return AI_LEAD_CATEGORIES.CALL_TRANSFER;
-  
+
   // Priority 2: Follow-up needed (callback requested or scheduled)
   if (lead.hasCallback || lead.callbackScheduled) return AI_LEAD_CATEGORIES.NEED_FOLLOW_UP;
-  
+
   // Priority 3: Score-based categories (AI-analyzed lead quality)
   if (lead.leadScore !== null && lead.leadScore !== undefined) {
     if (lead.leadScore >= 70) return AI_LEAD_CATEGORIES.HOT;
     if (lead.leadScore >= 40) return AI_LEAD_CATEGORIES.WARM;
   }
-  
+
   // Priority 4: Sentiment-based fallback for unscored leads
   if (lead.sentiment === 'positive') return AI_LEAD_CATEGORIES.WARM;
-  
+
   // No category - lead doesn't qualify for CRM display
   return null;
 }
@@ -2505,14 +2505,14 @@ export const leadActivities = pgTable("lead_activities", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   leadId: varchar("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  
+
   // Activity type: 'call' | 'note' | 'stage_change' | 'tag_added' | 'tag_removed' | 'created' | 'updated' | 'transfer' | 'appointment' | 'form_submission'
   activityType: text("activity_type").notNull(),
-  
+
   // Activity details
   title: text("title").notNull(), // Short description: "Stage changed to Hot Lead"
   description: text("description"), // Longer description if needed
-  
+
   // Metadata for different activity types
   metadata: jsonb("metadata").$type<{
     // For stage_change
@@ -2534,7 +2534,7 @@ export const leadActivities = pgTable("lead_activities", {
     // For transfer
     transferredTo?: string;
   }>(),
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -2553,31 +2553,31 @@ export type LeadActivity = typeof leadActivities.$inferSelect;
 export const crmCategoryPreferences = pgTable("crm_category_preferences", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  
+
   // Column order - array of category IDs in display order
   columnOrder: text("column_order").array().notNull().default(sql`ARRAY['warm', 'hot', 'appointment_booked', 'form_submitted', 'call_transfer', 'need_follow_up']::text[]`),
-  
+
   // Color overrides - JSON object mapping category ID to hex color
   colorOverrides: jsonb("color_overrides").$type<Record<string, string>>().default({}),
-  
+
   // Per-column sort preferences - JSON object mapping category ID to sort preference
   columnSortPreferences: jsonb("column_sort_preferences").$type<Record<string, 'newest' | 'oldest' | 'score-high' | 'score-low'>>().default({}),
-  
+
   // Filtering Settings
   hideLeadsWithoutPhone: boolean("hide_leads_without_phone").notNull().default(false),
-  
+
   // Pipeline stage mappings - which AI categories go to which pipeline stage
   // Maps aiCategory (hot/warm/cold) to pipeline stage id or name
   categoryPipelineMappings: jsonb("category_pipeline_mappings").$type<Record<string, string>>().default({}),
-  
+
   // Score thresholds for lead classification
   // hot: score >= hotThreshold, warm: score >= warmThreshold, cold: score < warmThreshold
   hotScoreThreshold: integer("hot_score_threshold").default(80),
   warmScoreThreshold: integer("warm_score_threshold").default(50),
-  
+
   // Hide specific classifications from view
   hiddenCategories: text("hidden_categories").array().default(sql`ARRAY[]::text[]`),
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -2598,16 +2598,16 @@ export type CrmCategoryPreferences = typeof crmCategoryPreferences.$inferSelect;
 export const websiteWidgets = pgTable("website_widgets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  
+
   // Basic Info
   name: text("name").notNull(),
   description: text("description"),
   status: text("status").notNull().default("active"), // active, paused, disabled
-  
+
   // Agent Configuration - which AI agent powers this widget
   agentId: varchar("agent_id").references(() => agents.id, { onDelete: "set null" }),
   agentType: text("agent_type").notNull().default("natural"), // natural, flow
-  
+
   // Branding
   iconUrl: text("icon_url"), // Custom icon for the chat bubble
   iconPath: text("icon_path"), // File path for uploaded icon
@@ -2617,41 +2617,41 @@ export const websiteWidgets = pgTable("website_widgets", {
   accentColor: text("accent_color").notNull().default("#1E40AF"), // Secondary color
   backgroundColor: text("background_color").notNull().default("#FFFFFF"), // Widget background
   textColor: text("text_color").notNull().default("#1F2937"), // Text color
-  
+
   // Terms & Conditions
   requireTermsAcceptance: boolean("require_terms_acceptance").notNull().default(false), // Show terms checkbox before call
-  
+
   // Widget Text Content
   welcomeMessage: text("welcome_message").notNull().default("Hi! Click to start a voice conversation."),
   launcherText: text("launcher_text").notNull().default("Talk to us"),
   offlineMessage: text("offline_message").notNull().default("We're currently unavailable. Please try again later."),
   lowCreditsMessage: text("low_credits_message").notNull().default("Service temporarily unavailable."),
-  
+
   // Domain Whitelisting
   allowedDomains: text("allowed_domains").array().notNull().default(sql`ARRAY[]::text[]`), // Empty = allow all
-  
+
   // Business Hours
   businessHoursEnabled: boolean("business_hours_enabled").notNull().default(false),
   businessHoursStart: text("business_hours_start").default("09:00"), // HH:MM format
   businessHoursEnd: text("business_hours_end").default("17:00"), // HH:MM format
   businessDays: text("business_days").array().default(sql`ARRAY['monday', 'tuesday', 'wednesday', 'thursday', 'friday']::text[]`),
   businessTimezone: text("business_timezone").default("America/New_York"),
-  
+
   // Call Limits & Abuse Prevention
   maxConcurrentCalls: integer("max_concurrent_calls").notNull().default(5),
   maxCallDuration: integer("max_call_duration").notNull().default(300), // seconds (5 minutes default)
   cooldownMinutes: integer("cooldown_minutes").notNull().default(0), // minutes between calls per IP (0 = no cooldown)
-  
+
   // Appointment Booking
   appointmentBookingEnabled: boolean("appointment_booking_enabled").notNull().default(false),
-  
+
   // Embed Token - used to identify widget in public API
   embedToken: text("embed_token").notNull().unique(),
-  
+
   // Analytics
   totalCalls: integer("total_calls").notNull().default(0),
   totalMinutes: integer("total_minutes").notNull().default(0),
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -2671,27 +2671,27 @@ export const widgetCallSessions = pgTable("widget_call_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   widgetId: varchar("widget_id").notNull().references(() => websiteWidgets.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  
+
   // Session Info
   sessionToken: text("session_token").notNull().unique(),
   visitorIp: text("visitor_ip"),
   visitorDomain: text("visitor_domain"), // Domain where widget is embedded
-  
+
   // Call State
   status: text("status").notNull().default("pending"), // pending, connecting, active, completed, failed
   duration: integer("duration"), // seconds
   creditsUsed: integer("credits_used").default(0),
-  
+
   // Recording & Transcript
   recordingUrl: text("recording_url"),
   transcript: text("transcript"),
   aiSummary: text("ai_summary"),
   sentiment: text("sentiment"),
-  
+
   // OpenAI Realtime connection
   openaiSessionId: text("openai_session_id"),
   openaiCredentialId: varchar("openai_credential_id"),
-  
+
   startedAt: timestamp("started_at"),
   endedAt: timestamp("ended_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -2721,7 +2721,7 @@ export const API_SCOPES = {
   'webhooks:read': 'View webhook subscriptions',
   'credits:read': 'View credit balance and usage',
   'analytics:read': 'View analytics data',
-  
+
   // Write scopes
   'calls:write': 'Trigger and manage calls',
   'campaigns:write': 'Create and manage campaigns',
@@ -2730,7 +2730,7 @@ export const API_SCOPES = {
   'knowledge:write': 'Upload knowledge base documents',
   'phone-numbers:write': 'Purchase and assign phone numbers',
   'webhooks:write': 'Manage webhook subscriptions',
-  
+
   // Admin scopes
   'admin': 'Full administrative access',
 } as const;
@@ -2741,33 +2741,33 @@ export type ApiScope = keyof typeof API_SCOPES;
 export const apiKeys = pgTable("api_keys", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  
+
   // Key identification
   name: text("name").notNull(), // User-friendly name: "Production Key", "CRM Integration"
   keyPrefix: text("key_prefix").notNull(), // First 8 chars of key for identification: "agl_1234..."
   hashedSecret: text("hashed_secret").notNull(), // bcrypt hash of the secret key
-  
+
   // Permissions
   scopes: text("scopes").array().notNull().default(sql`ARRAY['calls:read', 'calls:write', 'campaigns:read', 'contacts:read']::text[]`),
-  
+
   // Rate limiting
   rateLimit: integer("rate_limit").notNull().default(100), // Requests per minute
   rateLimitWindow: integer("rate_limit_window").notNull().default(60), // Window in seconds
-  
+
   // Security
   ipWhitelist: text("ip_whitelist").array().default(sql`ARRAY[]::text[]`), // Empty = allow all
   expiresAt: timestamp("expires_at"), // Optional expiration
-  
+
   // Status
   isActive: boolean("is_active").notNull().default(true),
   lastUsedAt: timestamp("last_used_at"),
   lastUsedIp: text("last_used_ip"),
   totalRequests: integer("total_requests").notNull().default(0),
-  
+
   // Metadata
   description: text("description"),
   metadata: jsonb("metadata"),
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -2788,28 +2788,28 @@ export const apiAuditLogs = pgTable("api_audit_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   apiKeyId: varchar("api_key_id").references(() => apiKeys.id, { onDelete: "set null" }),
-  
+
   // Request details
   method: text("method").notNull(), // GET, POST, PUT, DELETE
   endpoint: text("endpoint").notNull(), // /v1/calls, /v1/campaigns/:id
   path: text("path").notNull(), // Full path with params: /v1/campaigns/abc-123
-  
+
   // Request info
   requestBody: jsonb("request_body"), // Sanitized request body (no secrets)
   queryParams: jsonb("query_params"),
-  
+
   // Response info
   statusCode: integer("status_code").notNull(),
   responseTime: integer("response_time"), // Milliseconds
   errorMessage: text("error_message"),
-  
+
   // Client info
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
-  
+
   // Correlation
   requestId: text("request_id").notNull(), // Unique ID for request tracing
-  
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
